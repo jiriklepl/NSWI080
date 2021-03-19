@@ -1,4 +1,4 @@
 #!/bin/sh
 
 export CLASSPATH=.
-java SearcherClient "$@"
+rmiregistry

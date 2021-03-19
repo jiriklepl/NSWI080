@@ -1,6 +1,10 @@
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.Random;
 
-public class Main {
+public class SearcherClient {
 	// How many nodes and how many edges to create.
 	private static int GRAPH_NODES;
 	private static int GRAPH_EDGES;
@@ -11,7 +15,8 @@ public class Main {
 	private static Node[] nodes;
 
 	private static Random random = new Random();
-	private static Searcher searcher = new SearcherImpl();
+	private static Searcher localSearcher = null;
+	private static Searcher remoteSearcher = null;
 
 	/**
 	 * Creates nodes of a graph.
@@ -57,30 +62,42 @@ public class Main {
 	 * 
 	 * @param howMany number of measurements
 	 */
-	public static void searchBenchmark(int howMany) {
+	public static void searchBenchmark(int howMany) throws RemoteException {
 		// Display measurement header.
-		System.out.printf("%7s %8s %13s %13s%n", "Attempt", "Distance", "Time", "TTime");
+		System.out.printf("%7s %8s %13s %13s %13s %13s%n", "Attempt", "Distance", "Time", "TTime", "RTime", "RTTime");
 		for (int i = 0; i < howMany; i++) {
 			// Select two random nodes.
 			final int idxFrom = random.nextInt(nodes.length);
 			final int idxTo = random.nextInt(nodes.length);
 
 			// Calculate distance, measure operation time
-			final long startTimeNs = System.nanoTime();
-			final int distance = searcher.getDistance(nodes[idxFrom], nodes[idxTo]);
-			final long durationNs = System.nanoTime() - startTimeNs;
+			final long localStartTimeNs = System.nanoTime();
+			final int distance = localSearcher.getDistance(nodes[idxFrom], nodes[idxTo]);
+			final long localDurationNs = System.nanoTime() - localStartTimeNs;
+
+			// Calculate distance, measure operation time
+			final long remoteStartTimeNs = System.nanoTime();
+			if (distance != remoteSearcher.getDistance(nodes[idxFrom], nodes[idxTo]))
+				throw new RemoteException();
+			final long remoteDurationNs = System.nanoTime() - remoteStartTimeNs;
 
 			// Calculate transitive distance, measure operation time
-			final long startTimeTransitiveNs = System.nanoTime();
-			final int distanceTransitive = searcher.getDistanceTransitive(4, nodes[idxFrom], nodes[idxTo]);
-			final long durationTransitiveNs = System.nanoTime() - startTimeTransitiveNs;
+			final long localStartTimeTransitiveNs = System.nanoTime();
+			final int distanceTransitive = localSearcher.getDistanceTransitive(4, nodes[idxFrom], nodes[idxTo]);
+			final long localDurationTransitiveNs = System.nanoTime() - localStartTimeTransitiveNs;
+
+			// Calculate transitive distance, measure operation time
+			final long remoteStartTimeTransitiveNs = System.nanoTime();
+			if (distanceTransitive != remoteSearcher.getDistanceTransitive(4, nodes[idxFrom], nodes[idxTo]))
+				throw new RemoteException();
+			final long remoteDurationTransitiveNs = System.nanoTime() - remoteStartTimeTransitiveNs;
 
 			if (distance != distanceTransitive) {
 				System.out.printf("Standard and transitive algorithms inconsistent (%d != %d)%n", distance,
 						distanceTransitive);
 			} else {
 				// Print the measurement result.
-				System.out.printf("%7d %8d %13d %13d%n", i, distance, durationNs / 1000, durationTransitiveNs / 1000);
+				System.out.printf("%7d %8d %13d %13d %13d %13d%n", i, distance, localDurationNs / 1000, localDurationTransitiveNs / 1000, remoteDurationNs / 1000, remoteDurationTransitiveNs / 1000);
 			}
 		}
 	}
@@ -104,8 +121,15 @@ public class Main {
 			System.exit(1);
 		}
 
-		createNodes(GRAPH_NODES);
-		connectSomeNodes(GRAPH_EDGES);
-		searchBenchmark(SEARCHES);
+		try {
+			localSearcher = new SearcherImpl();
+			remoteSearcher = (Searcher)Naming.lookup("//localhost/SearcherServer");
+			createNodes(GRAPH_NODES);
+			connectSomeNodes(GRAPH_EDGES);
+			searchBenchmark(SEARCHES);
+		} catch (RemoteException | NotBoundException | MalformedURLException e) {
+			System.out.println("Exception: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 }
