@@ -1,3 +1,4 @@
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,7 +15,7 @@ class SearcherImpl implements Searcher {
 	 * until the target node is visited or no node is left.
 	 */
 	@Override
-	public int getDistance(Node from, Node to) {
+	public int getDistance(Node from, Node to) throws RemoteException {
 		// visited keeps the nodes visited in past steps.
 		Set<Node> visited = new HashSet<Node>();
 		// boundary keeps the nodes visited in current step.
@@ -63,7 +64,7 @@ class SearcherImpl implements Searcher {
 	 * nodes, until the target node is visited or no node is left.
 	 */
 	@Override
-	public int getDistanceTransitive(int neighborDistance, Node from, Node to) {
+	public int getDistanceTransitive(int neighborDistance, Node from, Node to) throws RemoteException {
 		// visited keeps the nodes visited in past steps.
 		Set<Node> visited = new HashSet<Node>();
 		// boundary keeps the nodes visited in current step.

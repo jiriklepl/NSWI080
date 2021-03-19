@@ -1,3 +1,4 @@
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,7 +15,7 @@ public class NodeImpl implements Node {
 	}
 
 	@Override
-	public Map<Node, Integer> getTransitiveNeighbors(int distance) {
+	public Map<Node, Integer> getTransitiveNeighbors(int distance) throws RemoteException {
 		if (distance <= 0)
 			throw new IllegalArgumentException("Argument distance must be positive");
 
