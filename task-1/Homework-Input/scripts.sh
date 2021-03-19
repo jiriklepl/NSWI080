@@ -46,3 +46,22 @@ remote_nodes() {
     done
     kill -9 $to_kill
 }
+
+# for the step 3 of the homework assignment
+remote_nodes_and_searcher() {
+    CLASSPATH=.
+    java -Djava.rmi.server.hostname=localhost SearcherServer &
+    to_kill=$!
+    sleep 5
+    for EDGES in $(seq 100)
+    do
+        EDGES=$((200 * (2 * EDGES - 1) / 2))
+        if bash run-client 200 $EDGES > "documentation/remote_nodes_and_searcher_200_$EDGES"
+        then :
+        else
+            kill -9 $to_kill
+            return 1
+        fi
+    done
+    kill -9 $to_kill
+}
