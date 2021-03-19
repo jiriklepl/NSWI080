@@ -59,3 +59,20 @@ We can clearly see the overhead of a remote call, it averages around multiple th
 ![Dependence of Time on Distance](remote_searcher2_2.png)
 
 These two plots only further confirm there is a lot of overhead associated with the remote calls.
+
+## Remote Nodes
+
+### Implementation
+
+- the files were modified according to the assignment
+  - there is `NodeImpl` for local nodes and `RemoteNodeImpl` for remote nodes and their respective factories
+  - the methods in `SearcherClient` were reworked to facilitate further implementations
+    - `createNodes` takes a `NodeFactory` and returns a graph
+    - `connectAllNodes` takes the graph as a parameter
+    - `connectSomeNodes` takes an array of graphs as a parameter and connects all graphs similarly
+    - `searchBenchmark` takes the graph and the searcher as parameters and then it either takes a number of tests to be performed or a list of indices of nodes it will perform the algorithms on; then the method returns the list of indices the test used (in both cases)
+  - the `SearcherCommon` class proved useful as sharing a name of a new class added to `RMI` can be done by adding a new static final field
+- old measurements were removed and the `scripts.sh` file was moved to the root folder
+
+### Measurement
+
