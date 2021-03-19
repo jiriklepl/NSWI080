@@ -11,7 +11,7 @@ public class SearcherServer
 			// Use the registry on this host to register the server.
 			// The host name must be changed if the server uses
 			// another computer than the client!
-			Naming.rebind("//localhost/SearcherServer", obj);
+			Naming.rebind(SearcherCommon.serverName, obj);
 
 			// The virtual machine will not exit here because the export of
 			// the remotely accessible object creates a new thread that

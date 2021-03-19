@@ -123,7 +123,7 @@ public class SearcherClient {
 
 		try {
 			localSearcher = new SearcherImpl();
-			remoteSearcher = (Searcher)Naming.lookup("//localhost/SearcherServer");
+			remoteSearcher = (Searcher)Naming.lookup(SearcherCommon.serverName);
 			createNodes(GRAPH_NODES);
 			connectSomeNodes(GRAPH_EDGES);
 			searchBenchmark(SEARCHES);
