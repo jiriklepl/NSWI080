@@ -127,15 +127,10 @@ public class SearcherClient {
 	public static void main(String[] args) {
 		// Create a randomly connected graph and do a quick measurement.
 		// Consider replacing connectSomeNodes with connectAllNodes to verify that all distances are equal to one.
-		boolean doLocal = true;
-		boolean doRemote = false;
-
-		if (args.length == 4) {
+		if (args.length == 2) {
 			try {
 				GRAPH_NODES = Integer.parseInt(args[0]);
 				GRAPH_EDGES = Integer.parseInt(args[1]);
-				doLocal = args[2].equals("true");
-				doRemote = args[3].equals("true");
 			} catch (NumberFormatException e) {
 				System.err.printf("Bad format%n");
 				System.exit(1);
