@@ -100,6 +100,8 @@ This graph, once again, resembles the original graph at [Local measurement](#Loc
 
 ## Remote Nodes and Searcher
 
+[Snapshot of the files here](https://github.com/jiriklepl/NSWI080/commit/a02ac66d67f29971c158c2a6bab8ea2c9adf4d15)
+
 ### Implementation
 
 - the client was modified according to the assignment
