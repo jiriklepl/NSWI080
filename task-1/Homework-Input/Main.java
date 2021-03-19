@@ -2,8 +2,8 @@ import java.util.Random;
 
 public class Main {
 	// How many nodes and how many edges to create.
-	private static final int GRAPH_NODES = 1000;
-	private static final int GRAPH_EDGES = 2000;
+	private static int GRAPH_NODES;
+	private static int GRAPH_EDGES;
 
 	// How many searches to perform
 	private static final int SEARCHES = 50;
@@ -88,6 +88,22 @@ public class Main {
 	public static void main(String[] args) {
 		// Create a randomly connected graph and do a quick measurement.
 		// Consider replacing connectSomeNodes with connectAllNodes to verify that all distances are equal to one.
+		if (args.length == 2) {
+			try {
+				GRAPH_NODES = Integer.parseInt(args[0]);
+				GRAPH_EDGES = Integer.parseInt(args[1]);
+			} catch (NumberFormatException e) {
+				System.err.printf("Bad format%n");
+				System.exit(1);
+			}
+		} else if (args.length == 0) {
+			GRAPH_NODES = 1000;
+			GRAPH_EDGES = 2000;
+		} else {
+			System.err.printf("Bad format%n");
+			System.exit(1);
+		}
+
 		createNodes(GRAPH_NODES);
 		connectSomeNodes(GRAPH_EDGES);
 		searchBenchmark(SEARCHES);
