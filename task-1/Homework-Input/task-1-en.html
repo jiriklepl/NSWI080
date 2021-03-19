@@ -1,0 +1,231 @@
+<html><head><title>Task 1 - Java RMI</title><link rel="stylesheet" href="assets/common.css" type="text/css"><style type="text/css">body{
+    font: 10pt sans-serif;
+}
+table, td{
+    border: 1px solid silver;
+    border-collapse: collapse;
+}
+code{
+    background-color: #eee;
+}
+em{
+    background-color: #ffc;
+}</style></head><body><h1>Task 1 - Java RMI</h1>
+<p>This task aims at basic understanding of distributed objects and remote procedure invocation (RPC).
+Modify a simple application to work remotely with a graph data structure and examine
+how choices in working with distributed objects can affect the performance of the application.</p>
+<h2>Introduction</h2>
+<p>The task is based on computing distances between pairs of nodes in a graph,
+simulating work with dynamic data structures.</p>
+<p>The provided Java application generates a graph, with a fixed number of nodes and randomly generated edges.
+Then, it runs a benchmark, selecting random pairs of nodes in the graph, measuring the distance between them and showing the time.</p>
+<p>It uses a simple breadth-first-search algorithm to measure the distance between two nodes in the graph.</p>
+<p>The <code>main</code> method is in the <code>Main</code> class.</p>
+<p>The node objects are instances of the <code>NodeImpl</code> class, and implement the interface <code>Node</code>:</p>
+<pre><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">Node</span> <span class="token punctuation">{</span>
+    <span class="token class-name">Set</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">Node</span><span class="token punctuation">&gt;</span></span> <span class="token function">getNeighbors</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">void</span> <span class="token function">addNeighbor</span><span class="token punctuation">(</span><span class="token class-name">Node</span> neighbor<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>The <code>addNeighbor(Node)</code> method adds the argument node to the set of neighbors of
+the receiver node object. This method is used when generating a graph.
+The <code>getNeighbors()</code> method returns a set of all neighbors of the receiver node
+and is used by the distance computation algorithm.</p>
+<p>The actual distance computation is done through a <code>Searcher</code> interface:</p>
+<pre><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">Searcher</span> <span class="token punctuation">{</span>
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token keyword">int</span> DISTANCE_INFINITE <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">public</span> <span class="token keyword">int</span> <span class="token function">getDistance</span><span class="token punctuation">(</span><span class="token class-name">Node</span> from<span class="token punctuation">,</span> <span class="token class-name">Node</span> to<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>This interface is implemented by the <code>SearcherImpl</code> class.
+The <code>getDistance(Node, Node)</code> method computes and returns the distance between nodes <code>from</code> and <code>to</code>.
+If <code>to</code> is not reachable from <code>from</code>, it returns <code>DISTANCE_INFINITE</code>.</p>
+<h2>Preparation</h2>
+<p>Download the example and local implementation from: <a href="https://d3s.mff.cuni.cz/legacy/files/teaching/nswi080/labs/Files/sources-1.zip">https://d3s.mff.cuni.cz/legacy/files/teaching/nswi080/labs/Files/sources-1.zip</a></p>
+<p>The task requires understanding of the following:</p>
+<ul>
+<li>Definition of a remotely accessible interface <br>
+(interface <code>java.rmi.Remote</code>, exception <code>java.rmi.RemoteException</code>).</li>
+<li>Implementation of a remotely accessible object <br>
+(class <code>java.rmi.server.UnicastRemoteObject</code>, inheriting from this class,
+method <code>exportObject</code>)</li>
+<li>Connecting the client and server using the RMI registry <br>
+(class <code>java.rmi.Naming</code>, the <code>rmiregistry</code> application)</li>
+</ul>
+<h2>Your tasks are</h2>
+<h3>1. Local measurement</h3>
+<p>Explore the provided implementation of the task that works locally.</p>
+<p><strong>Measure</strong> the speed of execution on several randomly generated
+graphs, with different densities, from sparse to dense.</p>
+<ul>
+<li>You can choose a fixed number of nodes (choose with regards to variants that will follow) and measure for a different number of edges</li>
+<li>Make a chart showing how the time of the query depends on the distance between the nodes and on the density of the graph</li>
+</ul>
+<h3>2. Remote Searcher</h3>
+<p>Create a server that would provide a remotely accessible object
+with the <code>Searcher</code> interface.
+Update the provided implementation to allow searching using the remote
+searcher object through the <code>Searcher</code> remote interface.
+The server object with the <code>Searcher</code> interface should accept node objects
+from the client.
+The nodes implement <code>Node</code> interface, and must not be remotely accessible.</p>
+<p><strong>Measure</strong> the speed of the implemented variants and show how the times depend on the distance and density.</p>
+<p><strong>Question:</strong> How does the server <code>Searcher</code> object access the <code>Node</code> objects and the set of their neighbors?</p>
+<ul>
+<li>The application will now consist of a client and a server.
+The client will look up a reference to the remote <code>Searcher</code> at startup using <code>java.rmi.Naming.lookup(path)</code>.</li>
+<li>Keep the code of both the server and the client in the same directory (no need for projects, packages).
+We want to avoid setting permissions for codebase etc.</li>
+<li>Use launcher scripts from the Example.</li>
+<li>Run the <code>rmiregistry</code> application in background.
+<ul>
+<li>If port is in use, choose a different port number (&gt; 1024)
+<ul>
+<li>Edit path in calls to <code>[re]bind()</code> and <code>lookup()</code></li>
+<li><code>localhost</code> becomes <code>localhost:1234</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Modify the <code>Searcher</code> interface (see <code>Example</code>), using the <code>java.rmi.Remote</code> interface and
+the exception class <code>java.rmi.RemoteException</code>.</li>
+<li>The remotely accessible object (see <code>ExampleImpl</code>) must be exported. There are 2 ways:
+<ul>
+<li>Derive from <code>java.rmi.server.UnicastRemoteObject</code>.</li>
+<li>Call <code>UnicastRemoteObject.exportObject(obj)</code> manually.</li>
+</ul>
+</li>
+<li>You can use the same class to implement the local searcher on the client and the remote one on the server.
+But make sure that the client does not export any local objects.</li>
+<li>Keep the possibility to measure searches using the local searcher.
+You can simply use both <code>Searcher</code> implementations after each other on the same pair of nodes in the graph to measure both variants.
+Add call to remote <code>Searcher.getDistance()</code> with local <code>Node</code> objects to the <code>searchBenchmark()</code> method.</li>
+<li>Just print an additional row or add a column to results in <code>searchBenchmark()</code>.</li>
+<li>You may encounter a <code>StackOverflowError</code> when using a large graph. In that case, you can increase the stack size limit using the <code>-Xss</code> option.</li>
+</ul>
+<h3>3. Remote Nodes</h3>
+<p>Update the server to provide remotely accessible objects with
+the <code>Node</code> interface that would be created upon client request.
+Update the provided implementation to allow computation of
+distance in the graph using a local <code>Searcher</code> working with server
+<code>Node</code> objects along the existing functionality.</p>
+<p>To create and return <code>Node</code> instances for client requests,
+define and implement a new <code>NodeFactory</code> interface with method <code>createNode()</code>.</p>
+<p><strong>Measure</strong> the speed again anf show how the times depend on the distance and density.</p>
+<p><strong>Question:</strong> How does the local <code>Searcher</code> object access the server <code>Node</code>
+objects? What exactly does the <code>NodeFactory</code> return to the client from <code>createNode</code>?</p>
+<ul>
+<li>Modify the interface <code>Node</code> to support RMI (like <code>Searcher</code> in the previous step).</li>
+<li><code>NodeFactory</code> is designed similarly to <code>Searcher</code> – it has an interface with RMI, an implementing class,
+create and call <code>Naming.bind</code> inside the existing server.</li>
+<li>Client gets the reference to the <code>NodeFactory</code> using <code>lookup</code>, then it creates the remote
+<code>Node</code> objects together with the local graph.</li>
+<li>The remote graph is just another array <code>Node[]</code> on the client, so it is easy to use both the local and remote graph.</li>
+<li>Do not forget that it is necessary to measure the same graphs (local and remote ones) to get a relevant comparison.
+When generating the edges, add the same edges to both graphs.</li>
+<li>Do not create a standalone server, we want just one server for the next variant.</li>
+</ul>
+<h3>4. Remote Nodes and Searcher</h3>
+<p>Add another variant: compute the distance using the remote
+<code>Searcher</code> object on the server, to which you pass (from the client)
+the remote <code>Node</code> objects from the server graph.</p>
+<p><strong>Measure</strong> the speed again and show how the times depend on the distance and density.</p>
+<p><strong>Question:</strong> How does the server <code>Searcher</code> access the server <code>Node</code>
+objects (on the same server)?</p>
+<ul>
+<li>Everything is ready, just add this variant to <code>searchBenchmark()</code> and
+compare the speed</li>
+</ul>
+<h3>5. Impact of the Network</h3>
+<p>So far, client and server were running on the same machine, with the
+overhead of RMI communication, but no network latency.</p>
+<p><strong>Compare</strong> the speed of the four variants when both client and server
+are running on the same machine. Measure everything in one run to ease comparison.
+Plot the results into a chart with four data series corresponding to the four variants.</p>
+<p><strong>Explain</strong> the cause of the differences in the times.</p>
+<p>Do the same for a situation when client and server
+are on different physical computers connected by a network.
+Test in a higher latency environment, e.g. between your computer and
+a computer in the school lab.</p>
+<p><strong>Compare</strong> the results of the two situations.
+(To measure the same graphs, use a fixed random number generator seed.)</p>
+<p><strong>Explain</strong> the cause of the differences in the times.</p>
+<ul>
+<li>Change paths in <code>[re]bind()</code> and <code>lookup()</code>, to the remote machine name instead of <code>localhost</code>.
+Ideally, use program argument to allow specifying the host name when starting the client.</li>
+<li>Run <code>rmiregistry</code> and <code>Server</code> in SSH session on the remote machine.</li>
+<li>Run the client locally.</li>
+<li>Beware of <code>CLASSPATH</code>. Make sure the server has access to the required class files.
+You can simply compile the sources on the server.</li>
+</ul>
+<h3>6. Passing by Value vs. Passing by Reference</h3>
+<p>Results of the previous measurements in variants 2 and 3 help to distinguish when
+it is faster to pass dynamic data structures by value and when it
+is faster to pass them by reference.
+The assignment demonstrates this on extreme all-or-nothing cases
+when either everything is passed by value or everything is passed
+by reference.
+But often a combination of both is the right choice.</p>
+<p>In the provided implementation of the <code>Searcher</code> interface,
+there is another method for computing the distance,
+<code>getTransitiveDistance(int,Node,Node)</code>.
+This method in each step retrieves not only
+direct neighbors of a node, but a whole set of neighbors that are at most
+as far from the node as specified by the first argument.</p>
+<p>This algorithm uses the <code>getTransitiveNeighbors(int)</code>
+method of the <code>Node</code> interface that returns all neighbors
+that are close enough -- i.e. that are accessible by at most <em>n</em> edges
+where <em>n</em> is an argument to that method.</p>
+<p>Use this algorithm and measure the speed for different values of the argument <em>n</em>.
+Find out for which values of the argument
+the measured times are comparable to those obtained from
+the settings described in 2 and 3.
+Use randomly generated sparse and dense graphs and test in a higher latency environment.</p>
+<h2>Instructions</h2>
+<ul>
+<li>
+<p>Submit by e-mail.</p>
+</li>
+<li>
+<p>Zip file containing:</p>
+<ul>
+<li>A working implementation of the four variants
+<ul>
+<li>Include all required source code</li>
+<li>Keep the implementation simple</li>
+<li>It shall be easy to start and shall work on the computer in the school labs</li>
+<li>Use modified versions of the run-server, etc. scripts
+(no need for packages, project files, maven or ant scripts)</li>
+</ul>
+</li>
+<li>Documentation
+<ul>
+<li>Answer all the questions from the assignment</li>
+<li>Charts with measurement results
+<ul>
+<li>Explanation of the results</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Notes:</p>
+<ul>
+<li>The program should allow doing all measurements withoud needing to recompile.</li>
+<li>Do not leave &quot;commented-out&quot; sections in the code without an explanation.</li>
+<li>Make sure the client application not export any objects
+<ul>
+<li>The client should terminate normally after doing the task. Do not use <code>System.exit(0)</code>.</li>
+</ul>
+</li>
+<li>When comparing different approaches on randomly generated graphs,
+use the same (isomorphic) graphs</li>
+</ul>
+</li>
+<li>
+<p>If something is unclear, ask on the mailing list.</p>
+</li>
+</ul>
+</body></html>
