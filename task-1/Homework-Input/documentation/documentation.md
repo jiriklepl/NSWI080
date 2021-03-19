@@ -75,6 +75,7 @@ These two plots only further confirm there is a lot of overhead associated with 
     - `connectAllNodes` takes the graph as a parameter
     - `connectSomeNodes` takes an array of graphs as a parameter and connects all graphs similarly
     - `searchBenchmark` takes the graph and the searcher as parameters and then it either takes a number of tests to be performed or a list of indices of nodes it will perform the algorithms on; then the method returns the list of indices the test used (in both cases)
+      - these changes allow as to perform the same tests on multiple searchers and graphs
   - the `SearcherCommon` class proved useful as sharing a name of a new class added to `RMI` can be done by adding a new static final field
 - old measurements were removed and the `scripts.sh` file was moved to the root folder
 
