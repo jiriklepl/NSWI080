@@ -146,12 +146,14 @@ public class SearcherClient {
 		try {
 			var localSearcher = new SearcherImpl();
 			var remoteNodeFactory = (NodeFactory)Naming.lookup(SearcherCommon.nodeFactoryName);
+			var remoteSearcher = (Searcher)Naming.lookup(SearcherCommon.searcherName);
 			var localNodeFactory = new NodeFactoryImpl();
 			Node[] localNodes = createNodes(GRAPH_NODES, localNodeFactory);
 			Node[] remoteNodes = createNodes(GRAPH_NODES, remoteNodeFactory);
 			connectSomeNodes(GRAPH_EDGES, new Node[][]{localNodes, remoteNodes});
 			var indices = searchBenchmark(SEARCHES, localNodes, localSearcher);
 			searchBenchmark(indices, remoteNodes, localSearcher);
+			searchBenchmark(indices, remoteNodes, remoteSearcher);
 		} catch (RemoteException | NotBoundException | MalformedURLException e) {
 			System.out.println("Exception: " + e.getMessage());
 			e.printStackTrace();

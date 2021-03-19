@@ -12,7 +12,7 @@ public class SearcherServer
 			// Use the registry on this host to register the server.
 			// The host name must be changed if the server uses
 			// another computer than the client!
-			Naming.rebind(SearcherCommon.serverName, searcher);
+			Naming.rebind(SearcherCommon.searcherName, searcher);
 			Naming.rebind(SearcherCommon.nodeFactoryName, nodeFactory);
 
 			// The virtual machine will not exit here because the export of
