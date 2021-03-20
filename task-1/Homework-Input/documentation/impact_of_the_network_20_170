@@ -112,7 +112,7 @@ Attempt Distance          Time         TTime
       8        3        222350         14232
       9        2        134701         15489
      10        1         10142         14690
-Standard and transitive algorithms inconsistent (0 != 1)
+
      12        2         58172         17241
      13        1         10372         20041
      14        1         10379         16041
@@ -163,7 +163,7 @@ Attempt Distance          Time         TTime
       8        3         13680         15863
       9        2         12732         14851
      10        1         11962         15584
-Standard and transitive algorithms inconsistent (0 != 1)
+
      12        2         11861         14803
      13        1         12841         15194
      14        1         11479         14065

@@ -103,7 +103,7 @@ Attempt Distance          Time         TTime
 Attempt Distance          Time         TTime
       0        2         60387         17821
       1        1         10764         17584
-Standard and transitive algorithms inconsistent (0 != 2)
+
       3        2         80861         18260
       4        3        142937         16579
       5        2         83302         24136
@@ -129,7 +129,7 @@ Standard and transitive algorithms inconsistent (0 != 2)
      25        3        195346         16806
      26        2         43950         16064
      27        1         14498         15914
-Standard and transitive algorithms inconsistent (0 != 2)
+
      29        3        185435         17642
      30        2         61074         15487
      31        1          9611         14783
@@ -144,9 +144,9 @@ Standard and transitive algorithms inconsistent (0 != 2)
      40        1         10463         14673
      41        2         96643         14430
      42        2         63733         15168
-Standard and transitive algorithms inconsistent (0 != 2)
+
      44        1         10935         13575
-Standard and transitive algorithms inconsistent (0 != 2)
+
      46        2         96103         17583
      47        2         45703         15266
      48        3        211363         15560
@@ -154,7 +154,7 @@ Standard and transitive algorithms inconsistent (0 != 2)
 Attempt Distance          Time         TTime
       0        2         11903         23553
       1        1         11968         15198
-Standard and transitive algorithms inconsistent (0 != 2)
+
       3        2         12295         14534
       4        3         13107         16084
       5        2         12571         14503
@@ -180,7 +180,7 @@ Standard and transitive algorithms inconsistent (0 != 2)
      25        3         16379         15372
      26        2         11074         15810
      27        1         11039         15254
-Standard and transitive algorithms inconsistent (0 != 2)
+
      29        3         14389         15725
      30        2         12622         14363
      31        1         13081         14738
@@ -195,9 +195,9 @@ Standard and transitive algorithms inconsistent (0 != 2)
      40        1         11086         15759
      41        2         13488         14831
      42        2         11674         15700
-Standard and transitive algorithms inconsistent (0 != 2)
+
      44        1         16393         15180
-Standard and transitive algorithms inconsistent (0 != 2)
+
      46        2         12012         15920
      47        2         11025         16000
      48        3         14166         15266
