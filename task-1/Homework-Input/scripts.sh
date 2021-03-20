@@ -47,7 +47,7 @@ remote_nodes() {
     kill -9 $to_kill
 }
 
-# for the step 3 of the homework assignment
+# for the step 4 of the homework assignment
 remote_nodes_and_searcher() {
     CLASSPATH=.
     java -Djava.rmi.server.hostname=localhost SearcherServer &
@@ -64,4 +64,18 @@ remote_nodes_and_searcher() {
         fi
     done
     kill -9 $to_kill
+}
+
+# for the step 5 of the homework assignment
+impact_of_the_network() {
+    CLASSPATH=.
+    for EDGES in $(seq 10)
+    do
+        EDGES=$((20 * (2 * EDGES - 1) / 2))
+        if bash run-client 20 $EDGES > "documentation/impact_of_the_network_20_$EDGES"
+        then :
+        else
+            return 1
+        fi
+    done
 }
