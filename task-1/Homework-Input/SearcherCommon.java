@@ -1,4 +1,8 @@
 public final class SearcherCommon {
-    public static final String searcherName = "//195.113.21.130/SearcherServer";
-    public static final String nodeFactoryName = "//195.113.21.130/NodeFactory";
+    public static final String searcherName(String host) {
+        return "//" + host + "/SearcherServer";
+    }
+    public static final String nodeFactoryName(String host) {
+        return "//" + host + "/NodeFactory";
+    }
 }

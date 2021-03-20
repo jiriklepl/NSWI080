@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-
-
 public class SearcherClient {
 	// How many nodes and how many edges to create.
 	private static int GRAPH_NODES;
@@ -125,34 +123,64 @@ public class SearcherClient {
 		return indices;
 	}
 	public static void main(String[] args) {
-		// Create a randomly connected graph and do a quick measurement.
-		// Consider replacing connectSomeNodes with connectAllNodes to verify that all distances are equal to one.
-		if (args.length == 2) {
-			try {
-				GRAPH_NODES = Integer.parseInt(args[0]);
-				GRAPH_EDGES = Integer.parseInt(args[1]);
-			} catch (NumberFormatException e) {
-				System.err.printf("Bad format%n");
-				System.exit(1);
-			}
-		} else if (args.length == 0) {
-			GRAPH_NODES = 1000;
-			GRAPH_EDGES = 2000;
-		} else {
-			System.err.printf("Bad format%n");
-			System.exit(1);
-		}
+		final String usage = "The correct arguments are: [<nodes> <edges> [[<host>] <local_nodes/remote_nodes> <local_searcher/remote_searcher>]%nIf not specified otherwise all will be assumed local";
+
+		NodeFactory nodeFactory = null;
+		Searcher searcher = null;
+		String host = "localhost";
 
 		try {
-			var localSearcher = new SearcherImpl();
-			var remoteNodeFactory = (NodeFactory)Naming.lookup(SearcherCommon.nodeFactoryName);
-			var remoteSearcher = (Searcher)Naming.lookup(SearcherCommon.searcherName);
-			var localNodeFactory = new NodeFactoryImpl();
-			Node[] localNodes = createNodes(GRAPH_NODES, localNodeFactory);
-			Node[] remoteNodes = createNodes(GRAPH_NODES, remoteNodeFactory);
-			connectSomeNodes(GRAPH_EDGES, new Node[][]{localNodes, remoteNodes});
-			var indices = searchBenchmark(SEARCHES, localNodes, remoteSearcher);
-			searchBenchmark(indices, remoteNodes, localSearcher);
+			if (args.length == 2 || args.length == 4 || args.length == 5) {
+				try {
+					GRAPH_NODES = Integer.parseInt(args[0]);
+					GRAPH_EDGES = Integer.parseInt(args[1]);
+				} catch (NumberFormatException e) {
+					System.err.printf("Bad format%n%s%n", usage);
+					System.exit(1);
+				}
+				if (args.length == 4 || args.length == 5) {
+					int host_offset = 0;
+					if (args.length == 5) {
+						host_offset = 1;
+						host = args[2];
+					}
+
+					if (args[2 + host_offset] == "remote_nodes")
+						nodeFactory = (NodeFactory)Naming.lookup(SearcherCommon.nodeFactoryName(host));
+					else if (args[2 + host_offset] == "local_nodes")
+						nodeFactory = new NodeFactoryImpl();
+					else {
+						System.err.printf("Bad format%n%s%n", usage);
+						System.exit(1);
+					}
+					if (args[3 + host_offset] == "remote_searcher")
+						searcher = (Searcher)Naming.lookup(SearcherCommon.searcherName(host));
+					else if (args[3 + host_offset] == "local_searcher")
+						searcher = new SearcherImpl();
+					else {
+						System.err.printf("Bad format%n%s%n", usage);
+						System.exit(1);
+					}
+				}
+			} else if (args.length == 0) {
+				GRAPH_NODES = 1000;
+				GRAPH_EDGES = 2000;
+			} else {
+				System.err.printf("Bad format%n%s%n", usage);
+				System.exit(1);
+			}
+
+			if (nodeFactory == null) {
+				nodeFactory = new NodeFactoryImpl();
+			}
+
+			if (searcher == null) {
+				searcher = new SearcherImpl();
+			}
+
+			Node[] nodes = createNodes(GRAPH_NODES, nodeFactory);
+			connectSomeNodes(GRAPH_EDGES, new Node[][]{nodes});
+			searchBenchmark(SEARCHES, nodes, searcher);
 		} catch (RemoteException | NotBoundException | MalformedURLException e) {
 			System.out.println("Exception: " + e.getMessage());
 			e.printStackTrace();
