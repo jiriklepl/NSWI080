@@ -79,3 +79,8 @@ impact_of_the_network() {
         fi
     done
 }
+
+# for the step 5 of the homework assignment
+value_vs_reference() {
+    bash run-client 100 200 > "documentation/value_vs_reference_100_200"
+}
