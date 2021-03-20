@@ -151,10 +151,8 @@ public class SearcherClient {
 			Node[] localNodes = createNodes(GRAPH_NODES, localNodeFactory);
 			Node[] remoteNodes = createNodes(GRAPH_NODES, remoteNodeFactory);
 			connectSomeNodes(GRAPH_EDGES, new Node[][]{localNodes, remoteNodes});
-			var indices = searchBenchmark(SEARCHES, localNodes, localSearcher);
-			searchBenchmark(indices, localNodes, remoteSearcher);
+			var indices = searchBenchmark(SEARCHES, localNodes, remoteSearcher);
 			searchBenchmark(indices, remoteNodes, localSearcher);
-			searchBenchmark(indices, remoteNodes, remoteSearcher);
 		} catch (RemoteException | NotBoundException | MalformedURLException e) {
 			System.out.println("Exception: " + e.getMessage());
 			e.printStackTrace();
