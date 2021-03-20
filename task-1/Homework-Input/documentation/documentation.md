@@ -125,6 +125,11 @@ This graph further confirms that the performance of this and the previous soluti
 
 ## Impact of the Network
 
+
+[Snapshot of the files here](https://github.com/jiriklepl/NSWI080/commit/6b5cda323a75e527d421058a6a0cd3c1aa0c0faf)
+
+### Implementation
+
 - the client was modified by adding one more call to the `searcherBenchmark` method as assigned
 - the `SearcherCommon` class proved itself useful once again as only two modifications to this very file were required to make the application run correctly
 
