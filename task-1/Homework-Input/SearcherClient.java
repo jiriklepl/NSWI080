@@ -110,7 +110,7 @@ public class SearcherClient {
 
 			// Calculate transitive distance, measure operation time
 			final long startTimeTransitiveNs = System.nanoTime();
-			final int distanceTransitive = searcher.getDistanceTransitive(4, graph[idxFrom], graph[idxTo]);
+			final int distanceTransitive = searcher.getDistanceTransitive(5, graph[idxFrom], graph[idxTo]);
 			final long durationTransitiveNs = System.nanoTime() - startTimeTransitiveNs;
 
 			if (distance != distanceTransitive) {
