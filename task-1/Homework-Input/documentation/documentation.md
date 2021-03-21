@@ -1,6 +1,6 @@
 # Task 1 - Java RMI
 
-There will be many mentions of files that no longer exist, they will be stored in git repositories history
+There will be many mentions of files that no longer exist, they will be stored in git repositories history (along the implementations used for the particular step - they were modified to run multiple tests (for each measured variant) on isomorphic graphs)
 
 ## Local measurement
 
