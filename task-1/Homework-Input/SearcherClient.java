@@ -135,7 +135,7 @@ public class SearcherClient {
 					GRAPH_NODES = Integer.parseInt(args[0]);
 					GRAPH_EDGES = Integer.parseInt(args[1]);
 				} catch (NumberFormatException e) {
-					System.err.printf("Bad format%n%s%n", usage);
+					System.err.printf("Bad format for a number%n%s%n", usage);
 					System.exit(1);
 				}
 				if (args.length == 4 || args.length == 5) {
@@ -145,20 +145,20 @@ public class SearcherClient {
 						host = args[2];
 					}
 
-					if (args[2 + host_offset] == "remote_nodes")
+					if (args[2 + host_offset].equals("remote_nodes")) {
 						nodeFactory = (NodeFactory)Naming.lookup(SearcherCommon.nodeFactoryName(host));
-					else if (args[2 + host_offset] == "local_nodes")
+					} else if (args[2 + host_offset].equals("local_nodes")) {
 						nodeFactory = new NodeFactoryImpl();
-					else {
-						System.err.printf("Bad format%n%s%n", usage);
+					} else {
+						System.err.printf("Bad format for nodes %n%s%n", usage);
 						System.exit(1);
 					}
-					if (args[3 + host_offset] == "remote_searcher")
+					if (args[3 + host_offset].equals("remote_searcher")) {
 						searcher = (Searcher)Naming.lookup(SearcherCommon.searcherName(host));
-					else if (args[3 + host_offset] == "local_searcher")
+					} else if (args[3 + host_offset].equals("local_searcher")) {
 						searcher = new SearcherImpl();
-					else {
-						System.err.printf("Bad format%n%s%n", usage);
+					} else {
+						System.err.printf("Bad format for searcher %n%s%n", usage);
 						System.exit(1);
 					}
 				}
@@ -166,7 +166,7 @@ public class SearcherClient {
 				GRAPH_NODES = 1000;
 				GRAPH_EDGES = 2000;
 			} else {
-				System.err.printf("Bad format%n%s%n", usage);
+				System.err.printf("Bad format for the number of arguments%n%s%n", usage);
 				System.exit(1);
 			}
 
