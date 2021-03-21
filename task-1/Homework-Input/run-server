@@ -3,4 +3,4 @@
 export CLASSPATH=.
 # -Djava.rmi.dgc.leaseValue=500
 
-java -Djava.rmi.server.hostname=195.113.21.130 SearcherServer
+java -Djava.rmi.server.hostname=localhost SearcherServer
