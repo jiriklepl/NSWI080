@@ -1,6 +1,6 @@
 # Task 1 - Java RMI
 
-There will be many mentions of files that no longer exist, they will be stored in git repositories history
+There will be many mentions of files that no longer exist, they will be stored in git repositories history (along the implementations used for the particular step - they were modified to run multiple tests (for each measured variant) on isomorphic graphs)
 
 ## Local measurement
 
@@ -33,7 +33,7 @@ These graphs show that the algorithm is very slow in graphs with very hight dens
     - the remote tests are done right after their respective local tests
     - the benchmarking function checks validity of the remote distance results
   - the server implementation was based on the `ExampleServer` implementation
-- `Node` extends `Serializable` so it gets serialized and sent over the network at once
+- `Node` extends `Serializable` so the whole graph gets serialized and sent over the network at once when it is given as an argument to a remote procedure (this contrasts the very next solution which sends over handles to the nodes - we might call this approach 'eager' and the one in the next solution 'lazy')
   - this is quite efficient and each node is sent only once (the serializer understands references)
   - this solution adds a lot of latency towards the first request and a lot of memory overhead
 - there is a new class `ServerCommon` which stores data which are shared between the client and the server (e.g the server's name)
@@ -85,7 +85,7 @@ These two plots only further confirm there is a lot of overhead associated with 
 
 ### Question
 
-The local `Searcher` accesses the nodes via the network handles (this is very slow and each node can send handles to other nodes (in serialized maps etc)).
+The local `Searcher` accesses the nodes via the network handles (this is very slow and each node can send handles to other nodes (in serialized maps)).
 
 ### Measurement
 
@@ -116,7 +116,7 @@ This graph, once again, resembles the original graph at [Local measurement](#Loc
 
 ### Question
 
-The server accesses the nodes from itself normally.
+The client sends over references to local nodes (handles) which are translated to references to the nodes on the server. The subsequent searching from the origin towards the destination then uses server's local objects and thus the difference in latency of the request is due to sending over the origin and destination end-nodes. 
 
 ### Measurement
 
