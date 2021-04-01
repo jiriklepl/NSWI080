@@ -27,7 +27,7 @@ int main(){
     // Use a binary protocol to serialize data
     shared_ptr<TProtocol> muxProtocol(new TBinaryProtocol(transport));
     // Use a multiplexed protocol to select a service by name
-    shared_ptr<TProtocol> clientProtocol(new TMultiplexedProtocol(muxProtocol, "Example"));
+    shared_ptr<TProtocol> clientProtocol(new TMultiplexedProtocol(muxProtocol, "ActualExample"));
 
     // Proxy object
     ExampleClient client(clientProtocol);
