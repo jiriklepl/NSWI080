@@ -26,7 +26,7 @@ public class ThriftClient {
     }
     public static void main(String args[]) {
         // Connect to server by TCP socket
-        try (TTransport transport = new TSocket("lab.d3s.mff.cuni.cz", 5001)) {
+        try (TTransport transport = new TSocket("localhost", 5000)) {
             // The socket transport is already buffered
             // Use a binary protocol to serialize data
             TProtocol muxProtocol = new TBinaryProtocol(transport);
