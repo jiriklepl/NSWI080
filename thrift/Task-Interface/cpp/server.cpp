@@ -24,6 +24,7 @@
 // Generated headers
 #include "gen-cpp/Login.h"
 #include "gen-cpp/Search.h"
+#include "gen-cpp/Reports.h"
 
 using namespace apache::thrift;
 using namespace apache::thrift::transport;
@@ -88,47 +89,77 @@ class SearchHandler : public SearchIf {
     // That allows us to see how for each connection, a new handler is used
     std::shared_ptr<UserData> user_data;
     std::map<std::string, std::function<Item()>> item_factory = {
-        { "itemA", []() {
-            // TODO: add things to fetched
+        { "itemA", [this]() {
             Item item;
-            item.itemA.fieldA = rand();
-            std::size_t i = rand() & 0x7;
-            while (i--)
-                item.itemA.fieldB.push_back((short)rand());
-            item.itemA.fieldC = rand();
+
+            item.__isset.itemA = true;
+
+            {
+                auto s = std::to_string(item.itemA.fieldA = rand());
+                user_data->fetched.try_emplace("fieldA", std::set<std::string>()).first->second.emplace(s);
+            }
+            
+            {
+                std::size_t i = rand() & 0x7;
+                std::stringstream ss;
+                while (i--) {
+                    auto num = (short)rand();
+                    ss << num;
+                    if (i) ss << ',';
+                    item.itemA.fieldB.push_back(num);
+                }
+                user_data->fetched.try_emplace("fieldB", std::set<std::string>()).first->second.emplace(ss.str());
+            }
+            
+            {
+                auto s = std::to_string(item.itemA.fieldC = rand());
+                user_data->fetched.try_emplace("fieldC", std::set<std::string>()).first->second.emplace(s);
+            }
+            
             return item;
         }},
         { "itemB", [this]() {
             Item item;
+            item.__isset.itemB = true;
             {
+                auto s = std::to_string(rand());
+                user_data->fetched.try_emplace("fieldA", std::set<std::string>()).first->second.emplace(s);
+                item.itemB.fieldA = s;
+            }
+            {
+                std::size_t i = rand() & 0x7;
+                while (i--) {
+                    auto s = std::to_string(rand());
+                    item.itemB.fieldB.emplace(s);
+                }
                 std::stringstream ss;
-                ss << rand();
-                user_data->fetched.try_emplace("fieldA", std::set<std::string>()).first->second.emplace(ss.str());
-                item.itemB.fieldA = ss.str();
-            }
-            {
-                std::size_t i = rand() & 0x7;
-                while (i--) {
-                    std::stringstream ss;
-                    ss << rand();
-                    user_data->fetched.try_emplace("fieldB", std::set<std::string>()).first->second.emplace(ss.str());
-                    item.itemB.fieldB.emplace(ss.str());
+                for (auto &&s : item.itemB.fieldB) {
+                    if (++i) ss << ',';
+                    ss << s;
                 }
+                user_data->fetched.try_emplace("fieldB", std::set<std::string>()).first->second.emplace(ss.str());
             }
             {
                 std::size_t i = rand() & 0x7;
+                std::stringstream ss;
+                if (i != 0)
+                    item.itemB.__isset.fieldC = true;
                 while (i--) {
-                    std::stringstream ss;
-                    ss << rand();
+                    auto s = std::to_string(rand());
+                    ss << s;
+                    if (i) ss << ',';
+                    item.itemB.fieldC.push_back(s);
+                }
+                if (item.itemB.__isset.fieldC)
                     user_data->fetched.try_emplace("fieldC", std::set<std::string>()).first->second.emplace(ss.str());
-                    item.itemB.fieldC.push_back(ss.str());
-                }
             }
             return item;
         }},
-        { "itemC", []() {
+        { "itemC", [this]() {
             Item item;
-            item.itemC.fieldA = (rand() & 1) == 1;
+            item.__isset.itemC = true;
+            auto s = std::to_string(item.itemC.fieldA = (rand() & 1) == 1);
+            user_data->fetched.try_emplace("fieldA", std::set<std::string>()).first->second.emplace(s);
             return item;
         }},
     };
@@ -149,7 +180,12 @@ public:
         user_data(std::move(user_data)) {}
 
     void search(SearchState& _return, const std::string& query, const int32_t limit) override {
-        // Your implementation goes here
+        if (!user_data->loggedOn) {
+            ProtocolException e;
+            e.message = "Not logged on";
+
+            throw e;
+        }
 
         if (fetcher != nullptr) {
             ProtocolException e;
@@ -162,6 +198,13 @@ public:
     }
 
     void fetch(FetchResult& _return, const SearchState& state) override {
+        if (!user_data->loggedOn) {
+            ProtocolException e;
+            e.message = "Not logged on";
+
+            throw e;
+        }
+
         if (fetcher == nullptr) {
             ProtocolException e;
             e.message = "Searching not initiated";
@@ -178,28 +221,47 @@ public:
             return;
         }
 
-        while (true) {
-            if ((fetcher->j = fetcher->query.find(',', fetcher->i)) == std::string::npos) {
-                fetcher->i = 0;
-                continue;
-            }
+        _return.state = FetchState::ITEMS;
 
-            auto it = item_factory.find(fetcher->query.substr(fetcher->i, fetcher->j - fetcher->i));
+        fetcher->j = fetcher->query.find(',', fetcher->i);
 
-            if (it != item_factory.end()) {
-                _return.item = it->second();
-            }
+        auto it = (fetcher->j != fetcher->query.npos)
+            ? item_factory.find(fetcher->query.substr(fetcher->i, fetcher->j - fetcher->i))
+            : item_factory.find(fetcher->query.substr(fetcher->i));
 
-            if ((rand() & 3) == 0)
-                fetcher->i = fetcher->j + 1;
-
-            if ((rand() & 3) == 0)
-                --fetcher->limit;
-
-            break;
+        if (it != item_factory.end()) {
+            _return.__set_item(it->second());
+        } else {
+            _return.state = FetchState::PENDING;
         }
-    }
 
+        if ((rand() & 3) == 0)
+            fetcher->i = (fetcher->j != fetcher->query.npos)
+                ? fetcher->j + 1
+                : 0;
+
+        if ((rand() & 3) == 0)
+            --fetcher->limit;
+    }
+};
+
+class ReportsHandler : public ReportsIf {
+    std::shared_ptr<UserData> user_data;
+
+public:
+    ReportsHandler(std::shared_ptr<UserData> user_data) :
+        user_data(user_data) {}
+
+    bool saveReport(const Report& report) override {
+        if (!user_data->loggedOn) {
+            ProtocolException e;
+            e.message = "Not logged on";
+
+            throw e;
+        }
+
+        return report == user_data->fetched;
+    }
 };
 
 // This factory creates a new handler for each conection
@@ -219,14 +281,30 @@ public:
     std::shared_ptr<TProcessor> getProcessor(const TConnectionInfo& connInfo) override {
         // Assign a new id to this connection
         auto user_data = std::make_shared<UserData>(assignId());
+
         // Create a loginHandler for the Login service
         auto loginHandler = std::make_shared<LoginHandler>(user_data);
         // Create a processor for the Login service
         auto loginProcessor = std::make_shared<LoginProcessor>(loginHandler);
-        // Add the loginProcessor to a multiplexed loginProcessor
+
+        // Create a loginHandler for the Search service
+        auto searchHandler = std::make_shared<SearchHandler>(user_data);
+        // Create a processor for the Search service
+        auto searchProcessor = std::make_shared<SearchProcessor>(searchHandler);
+
+        // Create a loginHandler for the Reports service
+        auto reportsHandler = std::make_shared<ReportsHandler>(user_data);
+        // Create a processor for the Reports service
+        auto reportsProcessor = std::make_shared<ReportsProcessor>(reportsHandler);
+
+        // Add the loginProcessor to a multiplexed muxProcessor
+        // Add the searchProcessor to a multiplexed muxProcessor
+        // Add the reportsProcessor to a multiplexed muxProcessor
         // This allows extending this server by adding more services
         auto muxProcessor = std::make_shared<TMultiplexedProcessor>();
         muxProcessor->registerProcessor("Login", loginProcessor);
+        muxProcessor->registerProcessor("Search", searchProcessor);
+        muxProcessor->registerProcessor("Reports", reportsProcessor);
         // Use the multiplexed processor
         return muxProcessor;
     }

@@ -1,7 +1,7 @@
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMultiplexedProtocol;
@@ -13,13 +13,13 @@ import org.apache.thrift.transport.TTransport;
 
 public class ThriftClient {
     private static class Fields {
-        private Map<String, Set<String>> fields = new HashMap<String, Set<String>>();
+        private Map<String, Set<String>> fields = new TreeMap<String, Set<String>>();
         public final void addField(String fieldName, String fieldValue) {
             if (fields.containsKey(fieldName))
                 fields.get(fieldName).add(fieldValue);
             else {
-                Set<String> set = new HashSet<String>();
-                set.add(fieldName);
+                Set<String> set = new TreeSet<String>();
+                set.add(fieldValue);
                 fields.put(fieldName, set);
             }
         };
@@ -42,7 +42,7 @@ public class ThriftClient {
             int expectedKey = 0;
             int searchLimit = 100;
             String name = "name";
-            String query = "itemA";
+            String query = "itemA,itemB,itemC,itemD,itemB,itemA";
             
             while (true) {
                 try {
@@ -105,7 +105,11 @@ public class ThriftClient {
                             if (itemB.isSetFieldB()) {
                                 StringBuilder sb = new StringBuilder();
                                 int count = 0;
+                                TreeSet<String> set = new TreeSet<String>();
                                 for (String s : itemB.getFieldB()) {
+                                    set.add(s);
+                                }
+                                for (String s : set) {
                                     if (count++ > 0)
                                         sb.append(',');
                                     sb.append(s);
@@ -121,13 +125,13 @@ public class ThriftClient {
                                         sb.append(',');
                                     sb.append(i);
                                 }
-                                fields.addField("fieldB", sb.toString());
+                                fields.addField("fieldC", sb.toString());
                             }
                         } else if (item.isSetItemC()) {
                             ItemC itemC = item.getItemC();
                             
                             if (itemC.isSetFieldA()) {
-                                fields.addField("fieldA", String.valueOf(itemC.isFieldA()));
+                                fields.addField("fieldA", String.valueOf(itemC.isFieldA() ? 1 : 0));
                             }
                         }
                     break;
@@ -144,6 +148,8 @@ public class ThriftClient {
 
             if (!reportsClient.saveReport(fields.fields)) {
                 System.out.println("Something went wrong..");
+            } else {
+                System.out.println("Everything went well.");
             }
 
             loginClient.logOut();
