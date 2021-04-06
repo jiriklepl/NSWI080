@@ -33,9 +33,28 @@ using namespace apache::thrift::server;
 
 struct UserData {
     UserData(std::size_t connectionId) :
-        connectionId(connectionId), loggedOn(false), fetched() {}
+        connectionId(connectionId), loggedIn(false), fetched() {}
+
+    void checkLoggedIn() const {
+        if (!loggedIn) {
+            ProtocolException e;
+            e.message = "Not logged in";
+
+            throw e;
+        }
+    }
+
+    void checkLoggedOut() const {
+        if (loggedIn) {
+            ProtocolException e;
+            e.message = "Already logged in";
+
+            throw e;
+        }
+    }
+
     std::size_t connectionId;
-    bool loggedOn;
+    bool loggedIn;
     std::map<std::string, std::set<std::string>> fetched;
 };
 
@@ -53,12 +72,7 @@ public:
     void logIn(const std::string& userName, const std::int32_t key) override {
         std::int32_t expected_key = std::hash<std::string>{}(userName);
 
-        if (user_data->loggedOn) {
-            ProtocolException e;
-            e.message = "Already logged on";
-
-            throw e;
-        }
+        user_data->checkLoggedOut();
 
         if (key != expected_key) {
             InvalidKeyException e;
@@ -67,20 +81,14 @@ public:
 
             throw e;
         } else {
-            user_data->loggedOn = true;
+            user_data->loggedIn = true;
         }
     }
 
     // Implementation of logOut
     void logOut() override {
-        if (!user_data->loggedOn) {
-            ProtocolException e;
-            e.message = "Not logged on";
-
-            throw e;
-        }
-
-        user_data->loggedOn = false;
+        user_data->checkLoggedIn();
+        user_data->loggedIn = false;
     }
 };
 
@@ -180,12 +188,7 @@ public:
         user_data(std::move(user_data)) {}
 
     void search(SearchState& _return, const std::string& query, const int32_t limit) override {
-        if (!user_data->loggedOn) {
-            ProtocolException e;
-            e.message = "Not logged on";
-
-            throw e;
-        }
+        user_data->checkLoggedIn();
 
         if (fetcher != nullptr) {
             ProtocolException e;
@@ -193,17 +196,15 @@ public:
 
             throw e;
         }
+
+        _return.__set_countEstimate(limit);
+        _return.__set_fetchedItems(0);
         
         fetcher = std::make_unique<Fetcher>(0, 0, limit, query);
     }
 
     void fetch(FetchResult& _return, const SearchState& state) override {
-        if (!user_data->loggedOn) {
-            ProtocolException e;
-            e.message = "Not logged on";
-
-            throw e;
-        }
+        user_data->checkLoggedIn();
 
         if (fetcher == nullptr) {
             ProtocolException e;
@@ -231,16 +232,18 @@ public:
 
         if (it != item_factory.end()) {
             _return.__set_item(it->second());
+            _return.__set_nextSearchState(state);
+            ++_return.nextSearchState.fetchedItems;
         } else {
             _return.state = FetchState::PENDING;
         }
 
-        if ((rand() & 3) == 0)
+        if ((rand() & 1) == 0)
             fetcher->i = (fetcher->j != fetcher->query.npos)
                 ? fetcher->j + 1
                 : 0;
 
-        if ((rand() & 3) == 0)
+        if ((rand() & 3) <= 2)
             --fetcher->limit;
     }
 };
@@ -253,12 +256,7 @@ public:
         user_data(user_data) {}
 
     bool saveReport(const Report& report) override {
-        if (!user_data->loggedOn) {
-            ProtocolException e;
-            e.message = "Not logged on";
-
-            throw e;
-        }
+        user_data->checkLoggedIn();
 
         return report == user_data->fetched;
     }

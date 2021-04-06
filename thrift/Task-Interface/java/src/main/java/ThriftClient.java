@@ -25,6 +25,20 @@ public class ThriftClient {
         };
     }
     public static void main(String args[]) {
+        String name = null;
+        String query = null;
+        
+        if (args.length == 2) {
+            name = args[0];
+            query = args[1];
+        } else {
+            System.err.println("Usage: mvn exec:java -Dexec.args=\"NAME QUERY\"");
+            System.exit(1);
+        }
+
+        int expectedKey = 0;
+        int searchLimit = 100;
+
         // Connect to server by TCP socket
         try (TTransport transport = new TSocket("localhost", 5000)) {
             // The socket transport is already buffered
@@ -38,25 +52,21 @@ public class ThriftClient {
 
             // Open the connection
             transport.open();
-
-            int expectedKey = 0;
-            int searchLimit = 100;
-            String name = "name";
-            String query = "itemA,itemB,itemC,itemD,itemB,itemA";
             
             while (true) {
                 try {
+                    System.out.println("Attempting to log in.");
                     loginClient.logIn(name, expectedKey);
+                    System.out.println("Logged in.");
                     break;
                 } catch (InvalidKeyException e) {
                     expectedKey = e.expectedKey;
                 }
             }
 
+            System.out.println("Initiating the search.");
             TProtocol searchProtocol = new TMultiplexedProtocol(muxProtocol, "Search");
-
             Search.Client searchClient = new Search.Client(searchProtocol);
-
             SearchState searchState = searchClient.search(query, searchLimit);
 
             Fields fields = new Fields();
@@ -68,13 +78,16 @@ public class ThriftClient {
                 switch (fetchResult.state)
                 {
                     case PENDING:
+                        System.out.println("Pending.");
                         Thread.sleep(100);
                     break;
-                    case ITEMS:
-                        Item item = fetchResult.item;
 
-                        if (item.isSetItemA()) {
-                            ItemA itemA = item.getItemA();
+                    case ITEMS:
+                    Item item = fetchResult.item;
+                    
+                    if (item.isSetItemA()) {
+                        System.out.println("Fetched ItemA.");
+                        ItemA itemA = item.getItemA();
                             
                             if (itemA.isSetFieldA()) {
                                 fields.addField("fieldA", String.valueOf(itemA.getFieldA()));
@@ -96,6 +109,7 @@ public class ThriftClient {
                             }
 
                         } else if (item.isSetItemB()) {
+                            System.out.println("Fetched ItemB.");
                             ItemB itemB = item.getItemB();
                             
                             if (itemB.isSetFieldA()) {
@@ -128,6 +142,7 @@ public class ThriftClient {
                                 fields.addField("fieldC", sb.toString());
                             }
                         } else if (item.isSetItemC()) {
+                            System.out.println("Fetched ItemC.");
                             ItemC itemC = item.getItemC();
                             
                             if (itemC.isSetFieldA()) {
@@ -135,15 +150,17 @@ public class ThriftClient {
                             }
                         }
                     break;
+
                     case ENDED:
+                        System.out.println("Search ended.");
                         break fetchLoop;
                 }
 
                 searchState = fetchResult.nextSearchState;
             }
 
+            System.out.println("Saving the report.");
             TProtocol reportsProtocol = new TMultiplexedProtocol(muxProtocol, "Reports");
-
             Reports.Client reportsClient = new Reports.Client(reportsProtocol);
 
             if (!reportsClient.saveReport(fields.fields)) {

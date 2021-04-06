@@ -1,0 +1,176 @@
+<html><head><title>Task 2 - Apache Thrift</title><link rel="stylesheet" href="assets/common.css" type="text/css"><style type="text/css">body{
+    font: 10pt sans-serif;
+}
+table, td{
+    border: 1px solid silver;
+    border-collapse: collapse;
+}
+code{
+    background-color: #eee;
+}
+em{
+    background-color: #ffc;
+}</style></head><body><h1>Task 2 - Apache Thrift</h1>
+<p>This task is about cross-language communication using remote procedure calls (RPC), using Apache Thrift.
+Implement a simple client-server application which will use given a communication protocol. The protocol is based on a given language-independent interface description in Thrift IDL.
+Then, extend the protocol while maintaining full compatibility.</p>
+<h2>Preparation</h2>
+<p>Download the input source code <a href="https://d3s.mff.cuni.cz/legacy/files/teaching/nswi080/labs/Files/sources-2.zip">https://d3s.mff.cuni.cz/legacy/files/teaching/nswi080/labs/Files/sources-2.zip</a> .
+Install Apache Thrift and try the example <a href="https://d3s.mff.cuni.cz/legacy/files/teaching/nswi080/labs/Files/lab-2-en.html">https://d3s.mff.cuni.cz/legacy/files/teaching/nswi080/labs/Files/lab-2-en.html</a> .
+We will use C++ to implement the server. Choose another programming language supported by Thrift for implementing the client.</p>
+<p>The task requires understanding of the following:</p>
+<ul>
+<li>Mapping of Thrift IDL features to constructs of the target programming language.
+<ul>
+<li>This mapping may not be fully documented in Thrift's documentation. You may run the Thrift compiler on the provided IDL file, and explore the generated code in the target language. If still unclear, ask on our mailing list.</li>
+</ul>
+</li>
+<li>Implementation of a server for a thrift service using a simple IO stack, with a binary protocol, multiplex, and using a processor factory to create a separate handler for each client.</li>
+<li>Connecting to the running server and calling methods of a service.</li>
+</ul>
+<h2>Application</h2>
+<p>The application that will be implemented does not perform any meaningful task, it is designed to merely show working with various data types using cross-language RPC.</p>
+<p>The main idea is that the client logs in to the server, then lets the server perform a search for some items.
+The result of the search is a list of items, which are returned to the client one by one.
+The client generates a report based on the items and saves it on the server.</p>
+<p>Because the focus of this task is just the communication not an actual functionality of the application, we will work with just random data without any meaning.</p>
+<h3>Communication</h3>
+<p>The client and server should communicate like this:</p>
+<ol>
+<li><strong>The client logs in</strong>
+<ul>
+<li>Client calls method <code>logIn</code> of a <code>Login</code> service, with a user name an integer key.</li>
+<li>The server checks the validity of the key, and if the key does not match, throws an <code>InvalidKeyEception</code>, which will contain the correct key.</li>
+<li>The client calls <code>logIn</code> again, now with the correct key.</li>
+</ul>
+</li>
+<li><strong>Searching for items</strong>
+<ul>
+<li>The client calls method &quot;search&quot; of <code>Search</code> service.
+<ul>
+<li>The <code>query</code> string is a comma-separated list of types of items that are searched for. There are multiple types of items: <code>ItemA</code>, <code>ItemB</code>, <code>ItemC</code>.</li>
+<li>The <code>limit</code> is a maximum number of items that should be included in the result</li>
+</ul>
+</li>
+<li>The server will respond with a <code>SearchResult</code>, which will be used to fetch individual items of the search result.
+<ul>
+<li>It does not return the search result as an actual list of items, because the idea is that the search may take a long time, so the client will fetch the items later.</li>
+</ul>
+</li>
+<li>The client repeatedly calls <code>fetch</code> to fetch the items one by one.
+<ul>
+<li>For the first call, it uses the <code>SearchResult</code> returned from <code>search</code>.</li>
+<li>The returned <code>FetchResult</code> either contains an item from the result, or indicates why no item was returned.
+<ul>
+<li>If the <code>state</code> field of <code>FetchResult</code> is <code>ENDED</code>, then no item was returned, because there are no more items (all were already fetched).</li>
+<li>If the <code>state</code> field of <code>FetchResult</code> is <code>PENDING</code>, then no item was returned, because the server is still searching for items and does not currently have any items to return.
+<ul>
+<li>In this case, the client should wait for a bit and try again.</li>
+</ul>
+</li>
+<li>If the <code>state</code> field of <code>FetchResult</code> is <code>ITEMS</code>, then the <code>item</code> field contains an item.</li>
+</ul>
+</li>
+<li>For subsequent calls to <code>fetch</code>, the client uses the <code>nextSearchState</code> from the previous <code>fetchResult</code>.
+<ul>
+<li>The search state contains the number of items fetched so far, and may contain an estimate of the total number of items.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Creating a report</strong>
+<ul>
+<li>A &quot;report&quot; in this case will be a multimap-like collection, represented as a map form a string to a set of strings.
+<ul>
+<li>The keys in the map will be the names of fields in the item types, such as <code>&quot;fieldA&quot;</code>, <code>&quot;fieldB&quot;</code>, etc.</li>
+<li>The sets will contain all values of that field across all the items.</li>
+</ul>
+</li>
+<li>The client collects all field values from all the fetched items into the multimap.
+<ul>
+<li>The values of all the fields should be converted to strings. If the field is a collection, then the values should be comma-separated.</li>
+</ul>
+</li>
+<li>The client saves the report on the server using <code>saveReport</code> in <code>Reports</code>.</li>
+<li>The server verifies that the report is accurate and indicates that by a boolean return value.</li>
+</ul>
+</li>
+<li><strong>The client logs out</strong>
+<ul>
+<li>The client calls <code>logOut</code>.</li>
+</ul>
+</li>
+</ol>
+<h2>Your tasks are</h2>
+<h3>1. Implement the Client</h3>
+<p>Implement a client which will communicate with the server using the protocol defined by the IDL file and the description above.</p>
+<ul>
+<li>Use a programming language of your choice.</li>
+<li>The name used to log in and the query string may be command-line options of the program.</li>
+<li>The search limit may be some reasonable constant.</li>
+<li>The rest of what the client does will depend on what the server returns.</li>
+<li>In each step, print a message to standard output to show the progress of the application.</li>
+</ul>
+<h4>Connect to Server (Optional)</h4>
+<ul>
+<li><strong>The server is not available yet.</strong></li>
+<li><strong>This part will not be required.</strong> It may help you with testing your client, but it will not be used as a criterion in evaluating your solutions.</li>
+</ul>
+<p>Test that the client works with our server at <code>lab.d3s.mff.cuni.cz:5001</code>.</p>
+<ul>
+<li>There are 3 services in multiplex, named <code>Login</code>, <code>Search</code> and <code>Reports</code>.</li>
+<li>The transport and protocol stack is the same as in the lab example (multiplex over a binary protocol).</li>
+<li>Choose a unique name for login.</li>
+</ul>
+<h3>2. Implement the Server</h3>
+<p>Implement the server side of the application in C++.</p>
+<ul>
+<li>For the expected key in <code>login</code>, you may use a random value per connection, or some hash of the user name.</li>
+<li>For the result of <code>search</code>, use some random generated items, while honoring the types specified in the query string and the limit.
+<ul>
+<li>Generate a reasonable number of items and put the count in <code>countEstimate</code>.</li>
+</ul>
+</li>
+<li>Sometimes, return <code>PENDING</code> in <code>state</code> to simulate a long-running search.</li>
+<li>In <code>saveReport</code>, check that the report is correct (it should be uniquely determined by the items).</li>
+<li>In all methods, if the client passes invalid arguments or calls methods in a wrong order, throw a <code>ProtocolException</code>.</li>
+<li>The Thrift IDL compiler, in addition to the files required for compilation, generates an empty skeleton implementation for each service. You can use parts of this code as the basis for your implementation.</li>
+</ul>
+<h3>3. Protocol update</h3>
+<p>An important feature of Thrift and its IDL is the ability to evolve the interface while keeping compatibility.
+For example, new fields can be added to user-defined types, or fields which are not <code>required</code> may be removed.</p>
+<p>The client and server may use different definition of a type. Fields are matched by their id (field names are not important). As long as matching fields have the same types on both sides, communication is possible.</p>
+<h4>New features</h4>
+<ol>
+<li>Define a new type of an item (with some fields of your choice) and integrate it into the application in the same way as existing item types (<code>ItemA</code>, <code>ItemB</code>, <code>ItemC</code>) are.</li>
+<li>Modify the <code>SearchState</code> and <code>FetchResult</code> types in some way to allow fetching multiple items at once.
+<ul>
+<li>Update the IDL file while maintaining full compability.</li>
+<li>Update the implementations of the client and server.</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li>The update client should be compatible with the old server and the updated server should be compatible with the old client. (All four possible combinations should work, but the new functionality can be used only when both sides are updated.)</li>
+<li>Hint: the clinet must somehow tell the server that it supports fetching multiple items. It can do so by setting some field in <code>SearchState</code>.</li>
+<li>It is sufficient to submit just the updated source codes as a solution. You may indicate where changes were made, using comments.</li>
+</ul>
+<h2>Instructions</h2>
+<ul>
+<li>Submit by e-mail, a zip file containing:
+<ul>
+<li>The updated Thrift IDL file.</li>
+<li>Source code of the client, including build scripts if necessary.</li>
+<li>Source code of the server, including build scripts if necessary.</li>
+</ul>
+</li>
+<li>Keep the implementation simple.</li>
+<li>Do not crash or leak memory, perform undefined behavior, race conditions.</li>
+<li>Properly handle exceptions (do not crash or terminate just because the other side does not follow the protocol, etc.).</li>
+<li>It should be easy to build and run (preferrably should work on the computers in the school labs).</li>
+<li>You may use parts of the example codes and scripts.</li>
+<li>If something is unclear, ask on the mailing list.</li>
+</ul>
+</body></html>
