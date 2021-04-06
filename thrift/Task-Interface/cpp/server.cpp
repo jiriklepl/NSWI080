@@ -170,6 +170,16 @@ class SearchHandler : public SearchIf {
             user_data->fetched.try_emplace("fieldA", std::set<std::string>()).first->second.emplace(s);
             return item;
         }},
+        { "itemD", [this]() {
+            Item item;
+            item.__isset.itemD = true;
+            auto s = std::to_string(rand());
+            item.itemD.fieldA = s;
+            user_data->fetched.try_emplace("fieldA", std::set<std::string>()).first->second.emplace(s);
+            s = std::to_string(item.itemD.fieldC = (rand() & 1) == 1);
+            user_data->fetched.try_emplace("fieldC", std::set<std::string>()).first->second.emplace(s);
+            return item;
+        }},
     };
 
     struct Fetcher {
@@ -231,10 +241,15 @@ public:
             : item_factory.find(fetcher->query.substr(fetcher->i));
 
         if (it != item_factory.end()) {
+            if (state.supportsTwo) {
+                _return.__set_item2(it->second());
+                _return.state = FetchState::TWO_ITEMS;
+            }
             _return.__set_item(it->second());
             _return.__set_nextSearchState(state);
             ++_return.nextSearchState.fetchedItems;
         } else {
+            _return.__set_nextSearchState(state);
             _return.state = FetchState::PENDING;
         }
 

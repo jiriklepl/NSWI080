@@ -18,9 +18,9 @@ $(BIN): server.o $(gen-cpp-objects)
 
 # Generate source files from Thrift IDL
 $(gen-cpp-files): Task.thrift
-	thrift --gen cpp Task.thrift
+	@thrift --gen cpp Task.thrift
 
-%.o: %.cpp
+%.o: %.cpp $(gen-cpp-files)
 	$(CXX) $(CXXOPTS) -c -o $@ $(patsubst %,-I%,$(INCLUDES)) $<
 
 clean:

@@ -41,11 +41,17 @@ struct ItemC{
   1: bool fieldA
 }
 
+struct ItemD{
+  1: string fieldA
+  2: bool fieldC
+}
+
 // A type which can contain any of the item types
 union Item{
   1: ItemA itemA
   2: ItemB itemB
   3: ItemC itemC
+  4: ItemD itemD
   // TODO: add another type of item
 }
 
@@ -58,6 +64,8 @@ enum FetchState{
     ITEMS = 2
     // All items were fetched
     ENDED = 3
+    // There are two items
+    TWO_ITEMS = 4
 }
 
 // Represents a state of a search
@@ -66,6 +74,7 @@ struct SearchState{
     1: i32 countEstimate
     // Number of items fetched so far
     2: i32 fetchedItems
+    3: optional bool supportsTwo
 }
 
 // Result of a call to fetch
@@ -76,6 +85,7 @@ struct FetchResult{
     2: optional Item item
     // SearchState that should be passed to next call of fetch
     3: SearchState nextSearchState
+    4: optional Item item2
 }
 
 // Type of a report
