@@ -24,6 +24,85 @@ public class ThriftClient {
             }
         };
     }
+
+    private static void fetchItem(Item item, Fields fields) {
+        if (item.isSetItemA()) {
+            System.out.println("Fetched ItemA.");
+            ItemA itemA = item.getItemA();
+            
+            if (itemA.isSetFieldA()) {
+                fields.addField("fieldA", String.valueOf(itemA.getFieldA()));
+            }
+            
+            if (itemA.isSetFieldB()) {
+                StringBuilder sb = new StringBuilder();
+                int count = 0;
+                for (short i : itemA.getFieldB()) {
+                    if (count++ > 0)
+                        sb.append(',');
+                    sb.append(i);
+                }
+                fields.addField("fieldB", sb.toString());
+            }
+            
+            if (itemA.isSetFieldC()) {
+                fields.addField("fieldC", String.valueOf(itemA.getFieldC()));
+            }
+
+        } else if (item.isSetItemB()) {
+            System.out.println("Fetched ItemB.");
+            ItemB itemB = item.getItemB();
+            
+            if (itemB.isSetFieldA()) {
+                fields.addField("fieldA", itemB.getFieldA());
+            }
+            
+            if (itemB.isSetFieldB()) {
+                StringBuilder sb = new StringBuilder();
+                int count = 0;
+                TreeSet<String> set = new TreeSet<String>();
+                for (String s : itemB.getFieldB()) {
+                    set.add(s);
+                }
+                for (String s : set) {
+                    if (count++ > 0)
+                        sb.append(',');
+                    sb.append(s);
+                }
+                fields.addField("fieldB", sb.toString());
+            }
+            
+            if (itemB.isSetFieldC()) {
+                StringBuilder sb = new StringBuilder();
+                int count = 0;
+                for (String i : itemB.getFieldC()) {
+                    if (count++ > 0)
+                        sb.append(',');
+                    sb.append(i);
+                }
+                fields.addField("fieldC", sb.toString());
+            }
+        } else if (item.isSetItemC()) {
+            System.out.println("Fetched ItemC.");
+            ItemC itemC = item.getItemC();
+            
+            if (itemC.isSetFieldA()) {
+                fields.addField("fieldA", String.valueOf(itemC.isFieldA() ? 1 : 0));
+            }
+        } else if (item.isSetItemD()) {
+            System.out.println("Fetched ItemD.");
+            ItemD itemD = item.getItemD();
+
+            if (itemD.isSetFieldA()) {
+                fields.addField("fieldA", String.valueOf(itemD.getFieldA()));
+            }
+
+            if (itemD.isSetFieldC()) {
+                fields.addField("fieldC", String.valueOf(itemD.isFieldC() ? 1 : 0));
+            }
+        }
+    }
+
     public static void main(String args[]) {
         String name = null;
         String query = null;
@@ -68,6 +147,7 @@ public class ThriftClient {
             TProtocol searchProtocol = new TMultiplexedProtocol(muxProtocol, "Search");
             Search.Client searchClient = new Search.Client(searchProtocol);
             SearchState searchState = searchClient.search(query, searchLimit);
+            searchState.setSupportsTwo(true);
 
             Fields fields = new Fields();
 
@@ -83,72 +163,12 @@ public class ThriftClient {
                     break;
 
                     case ITEMS:
-                    Item item = fetchResult.item;
-                    
-                    if (item.isSetItemA()) {
-                        System.out.println("Fetched ItemA.");
-                        ItemA itemA = item.getItemA();
-                            
-                            if (itemA.isSetFieldA()) {
-                                fields.addField("fieldA", String.valueOf(itemA.getFieldA()));
-                            }
-                            
-                            if (itemA.isSetFieldB()) {
-                                StringBuilder sb = new StringBuilder();
-                                int count = 0;
-                                for (short i : itemA.getFieldB()) {
-                                    if (count++ > 0)
-                                        sb.append(',');
-                                    sb.append(i);
-                                }
-                                fields.addField("fieldB", sb.toString());
-                            }
-                            
-                            if (itemA.isSetFieldC()) {
-                                fields.addField("fieldC", String.valueOf(itemA.getFieldC()));
-                            }
+                        fetchItem(fetchResult.item, fields);
+                    break;
 
-                        } else if (item.isSetItemB()) {
-                            System.out.println("Fetched ItemB.");
-                            ItemB itemB = item.getItemB();
-                            
-                            if (itemB.isSetFieldA()) {
-                                fields.addField("fieldA", itemB.getFieldA());
-                            }
-                            
-                            if (itemB.isSetFieldB()) {
-                                StringBuilder sb = new StringBuilder();
-                                int count = 0;
-                                TreeSet<String> set = new TreeSet<String>();
-                                for (String s : itemB.getFieldB()) {
-                                    set.add(s);
-                                }
-                                for (String s : set) {
-                                    if (count++ > 0)
-                                        sb.append(',');
-                                    sb.append(s);
-                                }
-                                fields.addField("fieldB", sb.toString());
-                            }
-                            
-                            if (itemB.isSetFieldC()) {
-                                StringBuilder sb = new StringBuilder();
-                                int count = 0;
-                                for (String i : itemB.getFieldC()) {
-                                    if (count++ > 0)
-                                        sb.append(',');
-                                    sb.append(i);
-                                }
-                                fields.addField("fieldC", sb.toString());
-                            }
-                        } else if (item.isSetItemC()) {
-                            System.out.println("Fetched ItemC.");
-                            ItemC itemC = item.getItemC();
-                            
-                            if (itemC.isSetFieldA()) {
-                                fields.addField("fieldA", String.valueOf(itemC.isFieldA() ? 1 : 0));
-                            }
-                        }
+                    case TWO_ITEMS:
+                        fetchItem(fetchResult.item, fields);
+                        fetchItem(fetchResult.item2, fields);
                     break;
 
                     case ENDED:
