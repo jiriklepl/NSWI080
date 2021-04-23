@@ -82,12 +82,58 @@ public class Client {
 	/*
 	 * Constructor, stores clientName, connection and initializes maps
 	 */
-	private Client(String clientName, Connection conn) {
+	private Client(String clientName, Connection conn) throws JMSException {
 		this.clientName = clientName;
 		this.conn = conn;
+
+		clientSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		eventSession = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+		// creating offer topic with sender 
+		clientSender = clientSession.createProducer(
+			offerTopic = clientSession.createTopic(OFFER_TOPIC));
 		
+		// creating toBankQue with sender
+		eventSender = eventSession.createProducer(
+			toBankQueue = eventSession.createQueue(Bank.BANK_QUEUE));
+		
+		// creating replyQueue and its receiver
+		replyReceiver = eventSession.createConsumer(
+			replyQueue = eventSession.createQueue(clientName));
+
+		// i decided to write it this way to make it more foolproof and readable
+
 		// generate some goods
 		generateGoods();
+
+
+		// sending the message with offers
+		MapMessage offerMessage = clientSession.createMapMessage();
+
+		for (String name : offeredGoods.keySet())
+			offerMessage.setObject(name, offeredGoods.get(name));
+
+		offerMessage.setStringProperty(CLIENT_NAME_PROPERTY, clientName);
+
+		clientSender.send(offerMessage);
+
+
+		// sending the request for account number
+		TextMessage newAccountRequest = eventSession.createTextMessage(Bank.NEW_ACCOUNT_MSG);
+
+		newAccountRequest.setJMSReplyTo(replyQueue);
+		newAccountRequest.setStringProperty(CLIENT_NAME_PROPERTY, clientName);
+
+		eventSender.send(newAccountRequest);
+
+
+		TextMessage accountMessage = (TextMessage)replyReceiver.receive(10000); // Timeout added unnecessarily to make it more safe
+
+		try {
+			accountNumber = Integer.parseInt(accountMessage.getText());
+		} catch(NumberFormatException e) {
+			throw new JMSException("The server cannot send good account numbers...");
+		}
 	}
 	
 	/*
