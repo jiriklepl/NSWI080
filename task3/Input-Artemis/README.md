@@ -2,6 +2,8 @@
 
 ## Steps according to "Your Task" List:
 
+(this part is obsolete now, but archived here as it was a significant part of my work and I explain here things I reused later)
+
 1. I decided to use a MapMessage message as we have a map of Goods, and also, I added a CLIENT_NAME_PROPERTY property with the value being equal to the client's name  as I think it would be useful later for identification.  Then I created a replyQueue named, again, after the client's name for the very same reason. For the message to the bank ~I decided for a simple String Message~(this is implied by the Bank implementation). The assignment doesn't specify the response message type, but I found out the implementation does specify it. So there are no further meaningful decisions except a 10s timeout if the bank or the connection dies for some reason.
 
 2. OK. I just found out that everything I just coded according to the assignment is already in the Client.connect method...
