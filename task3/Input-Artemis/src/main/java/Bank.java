@@ -32,6 +32,9 @@ public class Bank implements MessageListener {
 	 
 	// report type "received money"
 	public static final int REPORT_TYPE_RECEIVED = 1;
+
+	// report type "not enough money"
+	public static final int REPORT_TYPE_CANCELED = 2;
 	
 	// MapMessage key for sender's account
 	public static final String REPORT_SENDER_ACC_KEY = "senderAccount";
@@ -62,10 +65,13 @@ public class Bank implements MessageListener {
 	// map client account numbers to client names
 	private Map<Integer, String> accountsClients = new HashMap<Integer, String>();
 	
+	// map client account numbers to their balances
+	private Map<Integer, Integer> accountsBalances = new HashMap<Integer, Integer>();
+	
 	// map client names to client report destinations
 	private Map<String, Destination> clientDestinations = new HashMap<String, Destination>();
 	
-	// TODO: store and check account balance
+	// TO=DONE: store and check account balance
 	// in the current implementation, a transfer always succeeds 
 	// (1) check if the client has enough money
 	// (2) if not, send a message that the transfer failed instead
@@ -129,6 +135,7 @@ public class Bank implements MessageListener {
 				// also store the newly assigned number
 				clientAccounts.put(clientName, accountNumber);
 				accountsClients.put(accountNumber, clientName);
+				accountsBalances.put(accountNumber, 100_000); // Some money!
 			}
 			
 			System.out.println("Connected client " + clientName + " with account " + accountNumber);
@@ -156,24 +163,59 @@ public class Bank implements MessageListener {
 			String clientName = mapMsg.getStringProperty(Client.CLIENT_NAME_PROPERTY);
 			
 			// find client's account number
-			int clientAccount = clientAccounts.get(clientName);
+			Integer clientAccount = clientAccounts.get(clientName);
+
+			MapMessage reportMsg = bankSession.createMapMessage();
 			
 			// get receiver account number
 			int destAccount = mapMsg.getInt(ORDER_RECEIVER_ACC_KEY);
 			
 			// find receiving client's name
 			String destName = accountsClients.get(destAccount);
+
+			if (destName == null) {
+				return;
+			}
 			
 			// find receiving client's report message destination
 			Destination dest = clientDestinations.get(destName);
+
+			if (dest == null) {
+				return;
+			}
 			
 			// get amount of money being transferred
 			int amount = mapMsg.getInt(AMOUNT_KEY);
-						
+
+			Integer destBalance = accountsBalances.get(destAccount);
+			Integer clientBalance = accountsBalances.get(clientAccount);
+
+			if (destBalance == null || clientBalance == null) {
+				reportMsg.setInt(REPORT_TYPE_KEY, REPORT_TYPE_CANCELED);
+				reportMsg.setInt(REPORT_SENDER_ACC_KEY, clientAccount);
+				reportMsg.setInt(AMOUNT_KEY, 0);
+				bankSender.send(dest, reportMsg);
+			}
+
+			do {
+				clientBalance = accountsBalances.get(clientAccount);
+				
+				if (clientBalance < amount) {
+					reportMsg.setInt(REPORT_TYPE_KEY, REPORT_TYPE_CANCELED);
+					reportMsg.setInt(REPORT_SENDER_ACC_KEY, clientAccount);
+					reportMsg.setInt(AMOUNT_KEY, 0);
+					bankSender.send(dest, reportMsg);
+					return;
+				}
+			} while (!accountsBalances.replace(clientAccount, clientBalance, clientBalance - amount));
+
+			do {
+				destBalance = accountsBalances.get(destAccount)
+			} while(!accountsBalances.replace(destAccount, destBalance, destBalance + amount));
+
 			System.out.println("Transferring $" + amount + " from account " + clientAccount + " to account " + destAccount);
 			
 			// create report message for the receiving client
-			MapMessage reportMsg = bankSession.createMapMessage();
 			
 			// set report type to "you received money"
 			reportMsg.setInt(REPORT_TYPE_KEY, REPORT_TYPE_RECEIVED);
