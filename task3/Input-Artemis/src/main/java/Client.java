@@ -34,6 +34,9 @@ public class Client {
 	private static final String SALE_ANSWER_ACCEPT = "ACCEPT";
 	private static final String SALE_CONFIRMATION = "CONFIRM";
 	private static final String SALE_CANCELATION = "CANCEL";
+	private static final String OFFER_ACTION = "OfferAction";
+	private static final String OFFER_ACTION_OFFER = "OFFER";
+	private static final String OFFER_ACTION_FETCH = "FETCH";
 	
 	/****	PRIVATE VARIABLES	****/
 	
@@ -246,6 +249,7 @@ public class Client {
 		conn.start();
 		
 		// send list of offered goods
+		fetchOffers();
 		publishGoodsList(clientSender, clientSession);
 	}
 
@@ -267,6 +271,7 @@ public class Client {
 		// don't forget to include the clientName in the message so other clients know
 		// who is sending the offer - see how connect() does it when sending message to bank
 		offerMessage.setStringProperty(SELLER_NAME, clientName);
+		offerMessage.setStringProperty(OFFER_ACTION, OFFER_ACTION_OFFER);
 		
 		// send the message using the sender passed as parameter 
 		sender.send(offerTopic, offerMessage);
@@ -313,6 +318,7 @@ public class Client {
 			System.out.println("\nAvailable commands (type and press enter):");
 			System.out.println(" l - list available goods");
 			System.out.println(" p - publish list of offered goods");
+			System.out.println(" f - fetch lists of offered goods");
 			System.out.println(" b - buy goods");
 			System.out.println(" c - check balance");
 			System.out.println(" q - quit");
@@ -332,6 +338,9 @@ public class Client {
 					break;
 				case 'c':
 					check();
+					break;
+				case 'f':
+					fetchOffers();
 					break;
 				case 'p':
 					publishGoodsList(clientSender, clientSession);
@@ -458,6 +467,22 @@ public class Client {
 		}
 		
 	}
+
+	private void fetchOffers() throws JMSException {
+		MapMessage offerMessage = clientSession.createMapMessage();
+
+		for (String name : offeredGoods.keySet()) {
+			offerMessage.setInt(name, offeredGoods.get(name).price);
+		}
+
+		// don't forget to include the clientName in the message so other clients know
+		// who is sending the offer - see how connect() does it when sending message to bank
+		offerMessage.setStringProperty(SELLER_NAME, clientName);
+		offerMessage.setStringProperty(OFFER_ACTION, OFFER_ACTION_FETCH);
+		
+		// send the message using the sender passed as parameter 
+		clientSender.send(offerTopic, offerMessage);
+	}
 	
 	/*
 	 * Process a message with goods offer
@@ -474,6 +499,16 @@ public class Client {
 		// should ignore messages sent from myself
 		if (clientName.equals(senderName))
 			return;
+
+		String action = offerMessage.getStringProperty(OFFER_ACTION);
+		if (action.equals(OFFER_ACTION_FETCH)) {
+			publishGoodsList(eventSender, eventSession);
+		}
+
+		if (!action.equals(OFFER_ACTION_OFFER)) {
+			return; // we don' recognize this request/action
+		}
+
 
 		// store the list into availableGoods (replacing any previous offer)
 		// empty list means disconnecting client, remove it from availableGoods completely
