@@ -41,7 +41,7 @@ No meaningful decisions here
 
 ### Seventh TODO (Bank)
 
-I decided to add REPORT_TYPE_CANCELED, and then accountsBalances map mapping accounts to balances (everyone gets 100'000 upon account creation). I decided to check whether both accounts exist and whether the client has enough money and then I decided to update usign the CompareExchange-style version of replace (because we are a bank)
+I decided to add REPORT_TYPE_CANCELED, and then accountsBalances map mapping accounts to balances (everyone gets 10'000 upon account creation). I decided to check whether both accounts exist and whether the client has enough money and then I decided to update usign the CompareExchange-style version of replace (because we are a bank)
 
 ## Debugging
 
