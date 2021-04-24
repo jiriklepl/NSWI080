@@ -47,4 +47,6 @@ I decided to add REPORT_TYPE_CANCELED, and then accountsBalances map mapping acc
 
 I had to change goods to just prices in publishGoodsList and processOffer. This makes the overal design even better as there was a little bit of unnecessary redundancy there.
 
-I added check(), with an user option "c" which uses similar mechanism to the one with "new account", but with the replyQueue and everything was changed accordingly.
+I added check() with an user option "c", which uses similar mechanism to the one with "new account", but with the replyQueue and everything was changed accordingly.
+
+I added fetchOffers() with an user option "f" so the user can request offers from other instances, this command is run automatically upon startup.
