@@ -43,3 +43,8 @@ No meaningful decisions here
 
 I decided to add REPORT_TYPE_CANCELED, and then accountsBalances map mapping accounts to balances (everyone gets 100'000 upon account creation). I decided to check whether both accounts exist and whether the client has enough money and then I decided to update usign the CompareExchange-style version of replace (because we are a bank)
 
+## Debugging
+
+I had to change goods to just prices in publishGoodsList and processOffer. This makes the overal design even better as there was a little bit of unnecessary redundancy there.
+
+I added check(), with an user option "c" which uses similar mechanism to the one with "new account", but with the replyQueue and everything was changed accordingly.

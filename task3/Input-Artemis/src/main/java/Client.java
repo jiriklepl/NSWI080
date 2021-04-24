@@ -198,7 +198,7 @@ public class Client {
 		offerTopic = eventSession.createTopic(OFFER_TOPIC);
 		
 		// create a consumer of offers from the topic using the event session
-		offerConsumer = eventSession.createConsumer(null);
+		offerConsumer = eventSession.createConsumer(offerTopic);
 		
 		// set asynchronous listener for offers (see above how it can be done)
 		// which should call processOffer()
@@ -221,7 +221,7 @@ public class Client {
 		saleQueue = eventSession.createQueue(clientName + SALE_QUEUE_SUFFIX);
 		    
 		// create consumer of sale requests on the event session
-		saleConsumer = eventSession.createConsumer(null);
+		saleConsumer = eventSession.createConsumer(saleQueue);
 		    
 		// set asynchronous listener for sale requests (see above how it can be done)
 		// which should call processSale()
@@ -261,7 +261,7 @@ public class Client {
 		MapMessage offerMessage = session.createMapMessage();
 
 		for (String name : offeredGoods.keySet()) {
-			offerMessage.setObject(name, offeredGoods.get(name));
+			offerMessage.setInt(name, offeredGoods.get(name).price);
 		}
 
 		// don't forget to include the clientName in the message so other clients know
@@ -314,6 +314,7 @@ public class Client {
 			System.out.println(" l - list available goods");
 			System.out.println(" p - publish list of offered goods");
 			System.out.println(" b - buy goods");
+			System.out.println(" c - check balance");
 			System.out.println(" q - quit");
 			// read first character
 			int c = in.read();
@@ -329,6 +330,9 @@ public class Client {
 				case 'l':
 					list();
 					break;
+				case 'c':
+					check();
+					break;
 				case 'p':
 					publishGoodsList(clientSender, clientSession);
 					System.out.println("List of offers published");
@@ -337,6 +341,26 @@ public class Client {
 				default:
 					break;
 			}
+		}
+	}
+
+	void check() throws JMSException {
+		// request a bank account number
+		Message msg = eventSession.createTextMessage(Bank.GET_BALANCE);
+		msg.setStringProperty(CLIENT_NAME_PROPERTY, clientName);
+		// set ReplyTo that Bank will use to send me reply and later transfer reports
+		msg.setJMSReplyTo(replyQueue);
+		clientSender.send(toBankQueue, msg);
+		
+		// get reply from bank and store the account number
+		TextMessage reply = (TextMessage) replyReceiver.receive();
+		String result = reply.getText();
+		if (result != null) {
+			int accountBalance = Integer.parseInt(result);
+			System.out.println("Account number: " + accountNumber);
+			System.out.println("Account balance: " + accountBalance);
+		} else {
+			System.out.println("Invalid request.");
 		}
 	}
 	
@@ -427,7 +451,7 @@ public class Client {
 			// report successful sale to the user
 			System.out.println("Your request was confirmed!");
 		}
-		else if (answer.equals(SALE_CANCELATION) && confirmedName.equals(goodsName)) {
+		else if (answer.equals(SALE_CANCELATION)) {
 			System.out.println("Your request was canceled.");
 		} else {
 			System.out.println("Encountered unknown error.");
@@ -459,7 +483,8 @@ public class Client {
 			List<Goods> sellerGoods = new ArrayList<Goods>();
 			
 			do {
-				sellerGoods.add((Goods)offerMessage.getObject(goodsNames.nextElement()));
+				String name = goodsNames.nextElement();
+				sellerGoods.add(new Goods(name, offerMessage.getInt(name)));
 
 			} while (goodsNames.hasMoreElements());
 
@@ -537,25 +562,26 @@ public class Client {
 			int amount = mapMsg.getInt(Bank.AMOUNT_KEY);
 			// match the sender account with sender
 			String buyerName = reserverAccounts.get(buyerAccount);
+			Destination buyerDest = reserverDestinations.get(buyerName);
+
+			Goods g = reservedGoods.remove(buyerName);
+			reserverDestinations.remove(buyerName);
+			reserverAccounts.remove(buyerAccount);
+
 			if (cmd == Bank.REPORT_TYPE_RECEIVED) {
 				
 				
 				// match the reserved goods
-				Goods g = reservedGoods.get(buyerName);
 				
 				System.out.println("Received $" + amount + " from " + buyerName);
 				
 				/* Step 2: decide what to do and modify data structures accordingly */
 				
 				// did he pay enough?
-				if (g == null || amount >= g.price) {
+				if (g != null && amount >= g.price) {
 					// get the buyer's destination
-					Destination buyerDest = reserverDestinations.get(buyerName);
 
 					// remove the reserved goods and buyer-related information
-					reserverDestinations.remove(buyerName);
-					reserverAccounts.remove(buyerAccount);
-					reservedGoods.remove(buyerName);
 					
 					// TO-DONE (for the REGEX CHECK LATER)
 					/* Step 3: send confirmation message */
@@ -569,12 +595,14 @@ public class Client {
 					eventSender.send(buyerDest, reply);
 				} else {
 					// The client tried to rob us, we keep the money (if there is any)
-					Destination buyerDest = reserverDestinations.get(buyerName);
+					if (g != null)
+						offeredGoods.put(g.name, g);
 					TextMessage reply = this.clientSession.createTextMessage(SALE_CANCELATION);
 					eventSender.send(buyerDest, reply);
 				}
 			} else if (cmd == Bank.REPORT_TYPE_CANCELED) {
-				Destination buyerDest = reserverDestinations.get(buyerName);
+				if (g != null)
+					offeredGoods.put(g.name, g);
 				TextMessage reply = this.clientSession.createTextMessage(SALE_CANCELATION);
 				eventSender.send(buyerDest, reply);
 

@@ -11,6 +11,7 @@ public class Bank implements MessageListener {
 
 	// text message command open new account
 	public static final String NEW_ACCOUNT_MSG = "NEW_ACCOUNT";
+	public static final String GET_BALANCE = "GET_BALANCE";
 	
 	// MapMessage key for order type 
 	public static final String ORDER_TYPE_KEY = "orderType";
@@ -77,7 +78,7 @@ public class Bank implements MessageListener {
 	// (2) if not, send a message that the transfer failed instead
 	// (3) if yes, send the messages that the transfer succeeded and decrease the balance
 			
-	// TODO: add a command to get current account balance 
+	// TO-DONE: add a command to get current account balance 
 	
 	/**** PRIVATE METHODS ****/
 	
@@ -118,8 +119,9 @@ public class Bank implements MessageListener {
 		// get the destination that client specified for replies
 		// we will use it to send reply and also store it for transfer report messages
 		Destination replyDest = txtMsg.getJMSReplyTo();
+		String text = txtMsg.getText();
 		// is it a NEW ACCOUNT message?
-		if (NEW_ACCOUNT_MSG.equals(txtMsg.getText())) {
+		if (NEW_ACCOUNT_MSG.equals(text)) {
 			// get the client's name stored as a property
 			String clientName = txtMsg.getStringProperty(Client.CLIENT_NAME_PROPERTY);
 			
@@ -135,13 +137,27 @@ public class Bank implements MessageListener {
 				// also store the newly assigned number
 				clientAccounts.put(clientName, accountNumber);
 				accountsClients.put(accountNumber, clientName);
-				accountsBalances.put(accountNumber, 100_000); // Some money!
+				accountsBalances.put(accountNumber, 10_000); // Some money!
 			}
 			
 			System.out.println("Connected client " + clientName + " with account " + accountNumber);
 			
 			// create reply TextMessage with the account number 
 			TextMessage reply = bankSession.createTextMessage(String.valueOf(accountNumber));
+			// send the reply to the provided reply destination
+			bankSender.send(replyDest, reply);
+		} else if (GET_BALANCE.equals(text)) {
+			// get the client's name stored as a property
+			String clientName = txtMsg.getStringProperty(Client.CLIENT_NAME_PROPERTY);
+			TextMessage reply;
+
+			Integer accountNumber = clientAccounts.get(clientName);
+			String result = (accountNumber != null)
+				? String.valueOf(accountsBalances.get(accountNumber))
+				: null;
+
+			reply = bankSession.createTextMessage(result);
+
 			// send the reply to the provided reply destination
 			bankSender.send(replyDest, reply);
 		} else {
@@ -210,7 +226,7 @@ public class Bank implements MessageListener {
 			} while (!accountsBalances.replace(clientAccount, clientBalance, clientBalance - amount));
 
 			do {
-				destBalance = accountsBalances.get(destAccount)
+				destBalance = accountsBalances.get(destAccount);
 			} while(!accountsBalances.replace(destAccount, destBalance, destBalance + amount));
 
 			System.out.println("Transferring $" + amount + " from account " + clientAccount + " to account " + destAccount);
