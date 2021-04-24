@@ -15,7 +15,7 @@ First, I deleted all my code. Btw. thank you for the comments that explain what 
 ### First TODO (connect)
 
 1. Here I could reuse some of my deleted code (see that part for any details regarding this)
-2. Since this step I decided to make all variables that seem important fields of the client. And all string literals static final fields
+2. Since this step, I decided to make all variables that seem important fields of the client. And all string literals static final fields
 
 ### Second TODO (publishGoodsList)
 
@@ -31,7 +31,7 @@ Again, I put all string literals as static finals and I opted for a MapMessage (
 
 I added offerTopic to publishGoodsList (the assignment didn't mention it and the sender can have assigned destinations -> which it doesn't, after some inspection). Other than that, the implementation of this TODO was fairly straight-forward with no meaningful decisions made.
 
-### Fifth TODO (processOffer)
+### Fifth TODO (processSale)
 
 I changed the Map.get check to Map.remove (as it returns NULL on failure). Then I decided to change reservedGoods to map reservers to goods as this allows us to remember what the reservers reserved and the name in the map is kinda redundant. Other thn that, there were no more meaningful decisions
 
