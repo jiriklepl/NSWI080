@@ -1,2 +1,4 @@
 *.class
-/apache-artemis-2.17.0
+maven-status
+.project
+/apache-artemis-*
