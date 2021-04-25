@@ -1,4 +1,4 @@
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 import javax.jms.*;
@@ -61,16 +61,16 @@ public class Bank implements MessageListener {
 	private int lastAccount  = 1000000;
 	
 	// map client names to client account numbers
-	private Map<String, Integer> clientAccounts = new HashMap<String, Integer>();
+	private Map<String, Integer> clientAccounts = new ConcurrentHashMap<String, Integer>();
 	
 	// map client account numbers to client names
-	private Map<Integer, String> accountsClients = new HashMap<Integer, String>();
+	private Map<Integer, String> accountsClients = new ConcurrentHashMap<Integer, String>();
 	
 	// map client account numbers to their balances
-	private Map<Integer, Integer> accountsBalances = new HashMap<Integer, Integer>();
+	private Map<Integer, Integer> accountsBalances = new ConcurrentHashMap<Integer, Integer>();
 	
 	// map client names to client report destinations
-	private Map<String, Destination> clientDestinations = new HashMap<String, Destination>();
+	private Map<String, Destination> clientDestinations = new ConcurrentHashMap<String, Destination>();
 	
 	// TO=DONE: store and check account balance
 	// in the current implementation, a transfer always succeeds 

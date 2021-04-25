@@ -52,3 +52,5 @@ I had to change goods to just prices in publishGoodsList and processOffer. This 
 I added check() with an user option "c", which uses similar mechanism to the one with "new account", but with the replyQueue and everything was changed accordingly.
 
 I added fetchOffers() with an user option "f" so the user can request offers from other instances, this command is run automatically upon startup.
+
+I noticed that the assignment requires data access synchronization, which java does through the use of ConcurrentHashMaps, so I used them as I think this is the generally suggested way of data synchronizing. The updates to bank account balances were already safe.

@@ -1,12 +1,11 @@
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Enumeration;
 
 import javax.jms.*;
@@ -47,19 +46,19 @@ public class Client {
 	private int accountNumber;
 	
 	// offered goods, mapped by name
-	private Map<String, Goods> offeredGoods = new HashMap<String, Goods>();
+	private Map<String, Goods> offeredGoods = new ConcurrentHashMap<String, Goods>();
 	
 	// available goods, mapped by seller's name 
-	private Map<String, List<Goods>> availableGoods = new HashMap<String, List<Goods>>();
+	private Map<String, List<Goods>> availableGoods = new ConcurrentHashMap<String, List<Goods>>();
 	
 	// reserved goods, mapped by name of the buyer
-	private Map<String, Goods> reservedGoods = new HashMap<String, Goods>();
+	private Map<String, Goods> reservedGoods = new ConcurrentHashMap<String, Goods>();
 	
 	// buyer's names, mapped by their account numbers
-	private Map<Integer, String> reserverAccounts = new HashMap<Integer, String>();
+	private Map<Integer, String> reserverAccounts = new ConcurrentHashMap<Integer, String>();
 	
 	// buyer's reply destinations, mapped by their names
-	private Map<String, Destination> reserverDestinations= new HashMap<String, Destination>();
+	private Map<String, Destination> reserverDestinations= new ConcurrentHashMap<String, Destination>();
 	
 	// connection to the broker
 	private Connection conn;
