@@ -1,0 +1,11 @@
+May 13, 2021 10:19:01 PM org.apache.openejb.client.EventLogger log
+INFO: RemoteInitialContextCreated{providerUri=ejbd://localhost:4201}
+May 13, 2021 10:19:01 PM org.apache.openejb.client.EventLogger log
+INFO: ConnectionOpened{uri=ejbd://localhost:4201}
+May 13, 2021 10:19:01 PM org.apache.openejb.client.EventLogger log
+INFO: ServerAdded{server=ejbd://127.0.0.1:4201} ClusterMetaDataUpdated{provider=ejbd://localhost:4201, version=1620937105970, uris=2}
+May 13, 2021 10:19:01 PM org.apache.openejb.client.EventLogger log
+INFO: ServerAdded{server=ejbds://127.0.0.1:4203} ClusterMetaDataUpdated{provider=ejbd://localhost:4201, version=1620937105970, uris=2}
+May 13, 2021 10:19:01 PM org.apache.openejb.client.EventLogger log
+INFO: ServerRemoved{server=ejbd://localhost:4201} ClusterMetaDataUpdated{provider=ejbd://localhost:4201, version=1620937105970, uris=2}
+Application already deployed at "/home/jirka/Documents/NSWI080/task5/apache-openejb-8.0.6/apps/example.jar"

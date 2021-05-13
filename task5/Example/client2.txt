@@ -1,0 +1,41 @@
+May 13, 2021 10:20:34 PM org.apache.openejb.client.EventLogger log
+INFO: RemoteInitialContextCreated{providerUri=ejbd://127.0.0.1:4201}
+May 13, 2021 10:20:34 PM org.apache.openejb.client.EventLogger log
+WARNING: ConnectionFailed{uri=ejbd://127.0.0.1:4201 cause=java.io.IOException: Cannot connect to server 'ejbd://127.0.0.1:4201'.  Check that the server is started and that the specified serverURL is correct.}
+May 13, 2021 10:20:34 PM org.apache.openejb.client.EventLogger log
+WARNING: BootstrappingConnection{provider=ejbd://127.0.0.1:4201}
+May 13, 2021 10:20:34 PM org.apache.openejb.client.EventLogger log
+WARNING: ConnectionFailed{uri=ejbd://127.0.0.1:4201 cause=java.io.IOException: Cannot connect to server 'ejbd://127.0.0.1:4201'.  Check that the server is started and that the specified serverURL is correct.}
+May 13, 2021 10:20:34 PM org.apache.openejb.client.EventLogger log
+SEVERE: ConnectionStrategyFailed{strategy=StickyConnectionStrategy, cluster=org.apache.openejb.client.ClusterMetaData@66048bfd, server=ejbd://127.0.0.1:4201}
+Exception in thread "main" javax.naming.NamingException: Cannot lookup '/ExampleStatelessBeanRemote'. [Root exception is java.rmi.RemoteException: Unable to connect; nested exception is: 
+	java.io.IOException: Cannot connect to server 'ejbd://127.0.0.1:4201'.  Check that the server is started and that the specified serverURL is correct.]
+	at org.apache.openejb.client.JNDIContext.lookup(JNDIContext.java:453)
+	at javax.naming.InitialContext.lookup(InitialContext.java:417)
+	at ExampleClient.main(ExampleClient.java:20)
+Caused by: java.rmi.RemoteException: Unable to connect; nested exception is: 
+	java.io.IOException: Cannot connect to server 'ejbd://127.0.0.1:4201'.  Check that the server is started and that the specified serverURL is correct.
+	at org.apache.openejb.client.Client.processRequest(Client.java:166)
+	at org.apache.openejb.client.Client.request(Client.java:140)
+	at org.apache.openejb.client.JNDIContext.request(JNDIContext.java:236)
+	at org.apache.openejb.client.JNDIContext.lookup(JNDIContext.java:443)
+	... 2 more
+Caused by: java.io.IOException: Cannot connect to server 'ejbd://127.0.0.1:4201'.  Check that the server is started and that the specified serverURL is correct.
+	at org.apache.openejb.client.SocketConnectionFactory$SocketConnection.failure(SocketConnectionFactory.java:334)
+	at org.apache.openejb.client.SocketConnectionFactory$SocketConnection.open(SocketConnectionFactory.java:308)
+	at org.apache.openejb.client.SocketConnectionFactory.getConnection(SocketConnectionFactory.java:162)
+	at org.apache.openejb.client.ConnectionManager.getConnection(ConnectionManager.java:112)
+	at org.apache.openejb.client.AbstractConnectionStrategy.connect(AbstractConnectionStrategy.java:105)
+	at org.apache.openejb.client.AbstractConnectionStrategy.connect(AbstractConnectionStrategy.java:81)
+	at org.apache.openejb.client.ConnectionManager.getConnection(ConnectionManager.java:88)
+	at org.apache.openejb.client.Client.processRequest(Client.java:164)
+	... 5 more
+Caused by: java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+	at java.net.Socket.connect(Socket.java:607)
+	at org.apache.openejb.client.SocketConnectionFactory$SocketConnection.open(SocketConnectionFactory.java:300)
+	... 11 more
