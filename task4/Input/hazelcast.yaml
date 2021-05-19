@@ -15,9 +15,9 @@ hazelcast:
                 members:
                     localhost:5701
     map:
-        Documents: {
-            # Put configuration of the Example map here
-        }
-        Users: {
-            # Put configuration of the Example map here
-        }
+        Documents:
+            backup-count: 0
+            eviction:
+                eviction-policy: LRU
+                size: 16384 # 16kB
+        Users: { }
