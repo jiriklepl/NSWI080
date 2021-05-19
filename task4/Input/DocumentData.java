@@ -10,7 +10,6 @@ public class DocumentData implements Serializable {
 	private int views;
 	private ArrayList<String> comments;
 
-
 	public DocumentData(String name, Document document) {
 		this.name = name;
 	    this.document = document;
