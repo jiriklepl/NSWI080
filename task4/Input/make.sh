@@ -1,3 +1,4 @@
 #!/bin/sh
-source setenv.sh
-javac *.java
+
+. ./setenv.sh
+javac ./*.java
