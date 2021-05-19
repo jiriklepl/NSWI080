@@ -3,8 +3,8 @@ import java.util.ArrayList;
 
 public class User implements Serializable {
     private DocumentData selectedDocument;
-    ArrayList<String> favorites;
-    int lastFavorite;
+    private ArrayList<String> favorites;
+    private int lastFavorite;
 
     public User() {
         selectedDocument = null;
