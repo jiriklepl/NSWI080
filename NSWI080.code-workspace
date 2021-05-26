@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"string_view": "cpp"
+		},
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"C_Cpp.default.cppStandard": "c++20",
+		"files.trimTrailingWhitespace": true,
+		"files.insertFinalNewline": true,
+		"files.trimFinalNewlines": true
+	}
+}
