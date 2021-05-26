@@ -1,4 +1,4 @@
 #!/bin/sh
-source setenv.sh
+. ./setenv.sh
 
 javac *.java mwy/*.java

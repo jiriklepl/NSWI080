@@ -9,25 +9,25 @@ public class Main {
 
 	// How many searches to perform
 	private static final int SEARCHES = 50;
-	
+
 	private static Random random = new Random();
 	private static Searcher searcher;
-	
+
 	private static int[] nodeIds;
-	
+
 	/**
 	 * Creates nodes of a graph.
 	 * @param nodeCount number of nodes to be created
 	 */
 	public static void createNodes(int nodeCount) {
 		nodeIds = new int[nodeCount];
-		
+
 		for (int i = 0; i < nodeCount; ++i) {
 			int id = searcher.addNode();
 			nodeIds[i] = id;
 		}
 	}
-	
+
 	/**
 	 * Creates a randomly connected graph.
 	 * @param edgeCount number of edges to be added
@@ -40,7 +40,7 @@ public class Main {
 			searcher.connectNodes(nodeFromId, nodeToId);
 		}
 	}
-	
+
 	/**
 	 * Runs a quick measurement on the graph.
 	 * @param attemptCount number of searches
@@ -57,10 +57,10 @@ public class Main {
 			long time = System.nanoTime();
 			int distance = searcher.getDistance(nodeFromId, nodeToId);
 			time = System.nanoTime() - time;
-			
+
 			// Print the measurement result.
 			System.out.printf("%7d %8d %13d%n", i, distance, time / 1000);
-		}        
+		}
 	}
 
 	public static void main(String[] args) {

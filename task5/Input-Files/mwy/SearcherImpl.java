@@ -8,21 +8,21 @@ import java.util.Set;
 public class SearcherImpl implements Searcher {
 	private Map<Integer, Node> nodeMap;
 	private int lastNodeId;
-	
+
 	public SearcherImpl() {
 		nodeMap = new HashMap<Integer, Node>();
 		lastNodeId = 0;
 	}
-	
+
 	public int getDistance(int nodeFromId, int nodeToId) {
 		Node nodeFrom = nodeMap.get(nodeFromId);
 		Node nodeTo = nodeMap.get(nodeToId);
-		
+
 		// Implements a trivial distance measurement algorithm.
 		// Starting from the source node, a set of visited nodes
 		// is always extended by immediate neighbors of all visited
 		// nodes, until the target node is visited or no node is left.
-		
+
 		// visited keeps the nodes visited in past steps.
 		// boundary keeps the nodes visited in current step.
 		Set<Node> visited = new HashSet<Node>();
@@ -45,7 +45,7 @@ public class SearcherImpl implements Searcher {
 			for (Node node: boundary) {
 				traversing.addAll(node.getNeighbors());
 			}
-			
+
 			// Nodes visited in current step become nodes visited in past steps.
 			visited.addAll(boundary);
 			// Out of immediate neighbors, consider only those not yet visited.
@@ -73,5 +73,4 @@ public class SearcherImpl implements Searcher {
 
 		nodeFrom.addNeighbor(nodeTo);
 	}
-	
 }
