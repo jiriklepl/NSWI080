@@ -1,4 +1,4 @@
 #!/bin/sh
 . ./setenv.sh
 
-javac *.java mwy/*.java
+javac ./*.java mwy/*.java
