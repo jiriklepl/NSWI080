@@ -9,8 +9,6 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
-// TODO: print step dump
-
 public class ThriftClient {
     private static class Fields {
         private Map<String, Set<String>> fields = new TreeMap<String, Set<String>>();
@@ -27,7 +25,7 @@ public class ThriftClient {
     public static void main(String args[]) {
         String name = null;
         String query = null;
-        
+
         if (args.length == 2) {
             name = args[0];
             query = args[1];
@@ -52,7 +50,7 @@ public class ThriftClient {
 
             // Open the connection
             transport.open();
-            
+
             while (true) {
                 try {
                     System.out.println("Attempting to log in.");
@@ -84,15 +82,15 @@ public class ThriftClient {
 
                     case ITEMS:
                     Item item = fetchResult.item;
-                    
+
                     if (item.isSetItemA()) {
                         System.out.println("Fetched ItemA.");
                         ItemA itemA = item.getItemA();
-                            
+
                             if (itemA.isSetFieldA()) {
                                 fields.addField("fieldA", String.valueOf(itemA.getFieldA()));
                             }
-                            
+
                             if (itemA.isSetFieldB()) {
                                 StringBuilder sb = new StringBuilder();
                                 int count = 0;
@@ -103,7 +101,7 @@ public class ThriftClient {
                                 }
                                 fields.addField("fieldB", sb.toString());
                             }
-                            
+
                             if (itemA.isSetFieldC()) {
                                 fields.addField("fieldC", String.valueOf(itemA.getFieldC()));
                             }
@@ -111,11 +109,11 @@ public class ThriftClient {
                         } else if (item.isSetItemB()) {
                             System.out.println("Fetched ItemB.");
                             ItemB itemB = item.getItemB();
-                            
+
                             if (itemB.isSetFieldA()) {
                                 fields.addField("fieldA", itemB.getFieldA());
                             }
-                            
+
                             if (itemB.isSetFieldB()) {
                                 StringBuilder sb = new StringBuilder();
                                 int count = 0;
@@ -130,7 +128,7 @@ public class ThriftClient {
                                 }
                                 fields.addField("fieldB", sb.toString());
                             }
-                            
+
                             if (itemB.isSetFieldC()) {
                                 StringBuilder sb = new StringBuilder();
                                 int count = 0;
@@ -144,7 +142,7 @@ public class ThriftClient {
                         } else if (item.isSetItemC()) {
                             System.out.println("Fetched ItemC.");
                             ItemC itemC = item.getItemC();
-                            
+
                             if (itemC.isSetFieldA()) {
                                 fields.addField("fieldA", String.valueOf(itemC.isFieldA() ? 1 : 0));
                             }

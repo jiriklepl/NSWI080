@@ -46,7 +46,7 @@ union Item{
   1: ItemA itemA
   2: ItemB itemB
   3: ItemC itemC
-  // TODO: add another type of item
+  // TO-DONE: add another type of item
 }
 
 // State of fetching results of a search
@@ -94,8 +94,8 @@ service Search{
 
     // Fetches a part of the search result.
     // state is the result returned from search,
-    // TODO: modify SearchState and FetchResult so that it can return multiple items at once
-    // Throws ProtocolException if no search was performed, or if the index does not match the number 
+    // TO-DONE: modify SearchState and FetchResult so that it can return multiple items at once
+    // Throws ProtocolException if no search was performed, or if the index does not match the number
     FetchResult fetch(1: required SearchState state) throws (1: ProtocolException protocolException);
 }
 
