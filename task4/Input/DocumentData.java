@@ -6,13 +6,11 @@ import java.util.ArrayList;
  */
 public class DocumentData implements Serializable {
 	private String name;
-	private Document document;
 	private int views;
 	private ArrayList<String> comments;
 
-	public DocumentData(String name, Document document) {
+	public DocumentData(String name) {
 		this.name = name;
-	    this.document = document;
 		this.views = 0;
 		this.comments = new ArrayList<String>();
 	}
@@ -35,9 +33,5 @@ public class DocumentData implements Serializable {
 
 	public String getName() {
 	    return name;
-	}
-
-	public String getContent() {
-	    return document.getContent();
 	}
 }

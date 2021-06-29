@@ -10,16 +10,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-
 // Example application which is a Hazelcast cluster member
 public class Member {
-
 	public static void main(String[] args) {
         // The command-line argument is a prefix for entries created by this member
 		if (args.length != 1) {
 			System.err.println("Usage: bash run-member.sh <prefix>");
 			return;
 		}
+
 		String prefix = args[0];
 
 		try {
@@ -41,6 +40,4 @@ public class Member {
             e.printStackTrace();
         }
     }
-
-
 }

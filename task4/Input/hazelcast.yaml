@@ -20,4 +20,5 @@ hazelcast:
             eviction:
                 eviction-policy: LRU
                 size: 16384 # 16kB
+        DocumentData: { }
         Users: { }

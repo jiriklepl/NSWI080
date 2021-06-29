@@ -2,7 +2,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class User implements Serializable {
-    private DocumentData selectedDocument;
+    private String selectedDocument;
     private ArrayList<String> favorites;
     private int lastFavorite;
 
@@ -12,12 +12,12 @@ public class User implements Serializable {
         lastFavorite = 1;
     }
 
-    public DocumentData getSelectedDocument() {
+    public String getSelectedDocument() {
         return selectedDocument;
     }
 
-    public void setSelectedDocument(DocumentData document) {
-        selectedDocument = document;
+    public void setSelectedDocument(String documentName) {
+        selectedDocument = documentName;
     }
 
     public void addFavorite(String document) {
